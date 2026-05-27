@@ -191,14 +191,14 @@ def grafico_linea(df, col, titulo, unidad=""):
     fig = go.Figure()
 
     fig.add_trace(
-        go.Scatter(
-            x=s["fecha"],
-            y=s[col],
-            mode="lines",
-            line=dict(width=3.5, color="#0B3B36")
-            hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
-        )
+    go.Scatter(
+        x=s["fecha"],
+        y=s[col],
+        mode="lines",
+        line=dict(width=3.5, color="#0B3B36"),
+        hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
     )
+)
 
     fig.update_layout(
         title=titulo,
