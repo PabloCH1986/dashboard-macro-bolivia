@@ -60,6 +60,75 @@ h1, h2, h3, h4, h5, h6, p, label {
 </style>
 """, unsafe_allow_html=True)
 
+
+# =============================
+st.markdown("""
+<style>
+
+/* =========================
+   TEMA AUTOMÁTICO
+========================= */
+
+:root {
+    --bg-color: #FFFFFF;
+    --card-bg: #F8FAFC;
+    --text-color: #0F172A;
+    --subtext-color: #475569;
+    --border-color: #CBD5E1;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #0B1020;
+        --card-bg: #111827;
+        --text-color: #F8FAFC;
+        --subtext-color: #CBD5E1;
+        --border-color: #334155;
+    }
+}
+
+/* Fondo general */
+.stApp {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* Header Streamlit */
+[data-testid="stHeader"] {
+    background-color: var(--bg-color);
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background-color: var(--card-bg);
+}
+
+/* Texto */
+h1, h2, h3, h4, h5, h6, p, label, div {
+    color: var(--text-color);
+}
+
+/* Tarjetas KPI */
+.kpi-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* Tabs */
+.stTabs [data-baseweb="tab"] {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-radius: 12px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+
+
 # =========================
 # CARGA DE DATOS
 # =========================
