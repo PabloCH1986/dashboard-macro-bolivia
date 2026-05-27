@@ -13,72 +13,66 @@ st.set_page_config(
 EXCEL_FILE = "Info.xlsx"
 SHEET_NAME = "data"
 
-# =========================
-# ESTILO PREMIUM
-# =========================
 
-# =============================
+# =========================
+#    TEMA AUTOMÁTICO
+# ========================= 
+
 st.markdown("""
 <style>
-
-/* =========================
-   TEMA AUTOMÁTICO
-========================= */
-
-:root {
-    --bg-color: #FFFFFF;
-    --card-bg: #F8FAFC;
-    --text-color: #0F172A;
-    --subtext-color: #475569;
-    --border-color: #CBD5E1;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-color: #0B1020;
-        --card-bg: #111827;
-        --text-color: #F8FAFC;
-        --subtext-color: #CBD5E1;
-        --border-color: #334155;
-    }
-}
-
-/* Fondo general */
 .stApp {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: #0B1020;
+    color: #F8FAFC;
 }
 
-/* Header Streamlit */
 [data-testid="stHeader"] {
-    background-color: var(--bg-color);
+    background-color: #0B1020;
 }
 
-/* Sidebar */
 [data-testid="stSidebar"] {
-    background-color: var(--card-bg);
+    background-color: #111827;
 }
 
-/* Texto */
+.block-container {
+    padding-top: 1.5rem;
+}
+
 h1, h2, h3, h4, h5, h6, p, label {
-    color: var(--text-color) !important;
+    color: #F8FAFC !important;
 }
 
-/* Tarjetas KPI */
-.kpi-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 20px;
+[data-testid="stMetric"] {
+    background: linear-gradient(135deg, #111827, #1E293B);
+    border: 1px solid #334155;
+    padding: 18px;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
 }
 
-/* Tabs */
+[data-testid="stMetricLabel"] {
+    color: #CBD5E1 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: #F8FAFC !important;
+    font-size: 28px;
+}
+
+[data-testid="stMetricDelta"] {
+    font-size: 15px;
+}
+
 .stTabs [data-baseweb="tab"] {
-    background-color: var(--card-bg);
-    color: var(--text-color);
+    background-color: #111827;
+    color: #E5E7EB;
     border-radius: 12px;
+    padding: 10px 18px;
 }
 
+.stTabs [aria-selected="true"] {
+    background-color: #2563EB;
+    color: white;
+}
 </style>
 """, unsafe_allow_html=True)
 
