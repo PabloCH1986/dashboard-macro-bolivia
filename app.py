@@ -617,13 +617,13 @@ def tarjeta_riesgo(titulo, nivel):
             {titulo}
         </h3>
 
-        <h1 style="
-            color:white;
-            font-size:42px;
-            margin-top:10px;
+    <h1 style="
+        color:white;
+        font-size:42px;
+        margin-top:10px;
         ">
-            {nivel}
-        </h1>
+        {nivel}
+    </h1>
     </div>
     """, unsafe_allow_html=True)
 
