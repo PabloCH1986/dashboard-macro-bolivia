@@ -592,21 +592,12 @@ with tab2:
         )
 
     with b:
-        grafico_linea(
+        grafico_lineas_multiples(
             df,
-            bol_dep,
-            "Bolivianización de depósitos",
+            [bol_dep, bol_cred],
+            "Bolivianización de depósitos y créditos",
             "%"
         )
-
-    st.markdown("### Bolivianización del crédito")
-
-    grafico_linea(
-        df,
-        bol_cred,
-        "Bolivianización de créditos",
-        "%"
-    )
 
 # =========================
 # FUNCION TARJETA RIESGO
