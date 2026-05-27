@@ -21,7 +21,7 @@ SHEET_NAME = "data"
 st.markdown("""
 <style>
 .stApp {
-    background-color: #F8FAFC;
+    background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 100%);
     color: #0F172A;
 }
 
@@ -41,42 +41,64 @@ h1, h2, h3, h4, h5, h6, p, label {
     color: #0F172A !important;
 }
 
+/* KPIs */
 [data-testid="stMetric"] {
-    background: #FFFFFF;
-    border: 1px solid #CBD5E1;
+    background: linear-gradient(135deg, #FFFFFF 0%, #EAF1FF 100%);
+    border-left: 6px solid #2563EB;
+    border-top: 1px solid #DBEAFE;
+    border-right: 1px solid #DBEAFE;
+    border-bottom: 1px solid #DBEAFE;
     padding: 18px;
     border-radius: 18px;
-    box-shadow: 0 6px 18px rgba(15,23,42,0.12);
+    box-shadow: 0 8px 22px rgba(15,23,42,0.12);
 }
 
 [data-testid="stMetricLabel"] {
-    color: #334155 !important;
+    color: #1E3A8A !important;
+    font-weight: 700;
 }
 
 [data-testid="stMetricValue"] {
     color: #0F172A !important;
     font-size: 28px;
+    font-weight: 800;
 }
 
 [data-testid="stMetricDelta"] {
     font-size: 15px;
+    font-weight: 700;
 }
 
+/* Tabs */
 .stTabs [data-baseweb="tab"] {
-    background-color: #FFFFFF;
+    background: linear-gradient(135deg, #FFFFFF, #EEF2FF);
     color: #0F172A;
-    border-radius: 12px;
-    padding: 10px 18px;
-    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 11px 20px;
+    border: 1px solid #CBD5E1;
+    font-weight: 700;
 }
 
 .stTabs [aria-selected="true"] {
-    background-color: #2563EB;
-    color: white;
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    color: white !important;
+    border-bottom: 4px solid #D4AF37;
+}
+
+/* Mensajes */
+.stAlert {
+    border-radius: 14px;
+    border-left: 6px solid #D4AF37;
+}
+
+/* Separadores */
+hr {
+    border: none;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #CBD5E1, transparent);
 }
 </style>
 """, unsafe_allow_html=True)
-
 
 
 
@@ -188,7 +210,7 @@ def grafico_linea(df, col, titulo, unidad=""):
             x=s["fecha"],
             y=s[col],
             mode="lines",
-            line=dict(width=3),
+            line=dict(width=3.5, color="#2563EB"),
             hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
         )
     )
@@ -233,6 +255,7 @@ def grafico_linea(df, col, titulo, unidad=""):
 
 
 def grafico_lineas_multiples(df, cols, titulo, unidad=""):
+
     cols = [c for c in cols if c is not None]
 
     if not cols:
@@ -241,18 +264,28 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
     fig = go.Figure()
 
-    for c in cols:
+    # COLORES
+    colores = ["#2563EB", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6"]
+
+    for i, c in enumerate(cols):
+
         s = df[["fecha", c]].dropna()
 
         if not s.empty:
+
             fig.add_trace(
                 go.Scatter(
                     x=s["fecha"],
                     y=s[c],
                     mode="lines",
                     name=c,
-                    line=dict(width=3),
-                    hovertemplate="%{x|%d/%m/%Y}<br>%{y:,.2f}<extra></extra>"
+
+                    line=dict(
+                        width=3.5,
+                        color=colores[i % len(colores)]
+                    ),
+
+                    hovertemplate='%{x|%d/%m/%Y}<br>%{y:.2f}<extra></extra>'
                 )
             )
 
