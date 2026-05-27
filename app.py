@@ -508,7 +508,7 @@ with tab1:
             "Millones de Bs"
         )
 
-with tab2:
+    with tab2:
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
 
     st.markdown("### Indicadores complementarios de inflación")
