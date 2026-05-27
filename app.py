@@ -402,17 +402,17 @@ st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
 # HEADER
 # =========================
 
-col1, col2 = st.columns([1.2, 4])
+col1, col2 = st.columns([1, 5])
 
 with col1:
-    st.image("logo_cengob.png", width=260)
+    st.image("logo_cengob.png", width=160)
 
 with col2:
     st.markdown("""
     <h1 style="
         color:#F8FAFC;
         margin-bottom:0;
-        font-size:48px;
+        font-size: clamp(28px, 5vw, 48px);
         font-weight:800;
     ">
         Dashboard Macroeconómico Ejecutivo
@@ -421,7 +421,7 @@ with col2:
     <h2 style="
         color:#CBD5E1;
         margin-top:10px;
-        font-size:28px;
+        font-size: clamp(18px, 3vw, 28px);
         font-weight:600;
     ">
         Centro de Gobierno - CENGOB
@@ -430,7 +430,7 @@ with col2:
     <p style="
         color:#94A3B8;
         margin-top:14px;
-        font-size:20px;
+        font-size: clamp(14px, 2vw, 20px);
     ">
         Monitor de coyuntura económica, monetaria, externa y financiera
     </p>
