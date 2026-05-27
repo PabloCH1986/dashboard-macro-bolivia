@@ -393,6 +393,11 @@ with c8:
 
 st.markdown("---")
 
+st.info(
+    "Lectura ejecutiva: la inflación se mantiene en zona de alerta, "
+    "mientras las reservas internacionales continúan siendo el principal factor de riesgo externo."
+)
+
 # =========================
 # TABS
 # =========================
