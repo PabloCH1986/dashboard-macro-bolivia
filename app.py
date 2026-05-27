@@ -150,54 +150,59 @@ def kpi(df, titulo, col, unidad=""):
     st.caption(f"Último dato: {fecha.strftime('%d/%m/%Y')}")
 
 def grafico_linea(df, col, titulo, unidad=""):
+
     if col is None:
         st.warning(f"No se encontró: {titulo}")
         return
 
     s = df[["fecha", col]].dropna()
+
     if s.empty:
         st.warning(f"Sin datos para: {titulo}")
         return
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=s["fecha"],
-        y=s[col],
-        mode="lines",
-        line=dict(width=3),
-        hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
-    ))
 
-fig.update_layout(
-    title=titulo,
-    height=430,
-    template="plotly_dark",
-    paper_bgcolor="#111827",
-    plot_bgcolor="#111827",
-    font=dict(color="#F8FAFC"),
-    margin=dict(l=20, r=20, t=60, b=30),
-    xaxis_title="",
-    yaxis_title=unidad,
+    fig.add_trace(
+        go.Scatter(
+            x=s["fecha"],
+            y=s[col],
+            mode="lines",
+            line=dict(width=3),
+            hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
+        )
+    )
 
-    xaxis=dict(
-        rangeselector=dict(
-            buttons=list([
-                dict(count=1, label="1A", step="year", stepmode="backward"),
-                dict(count=5, label="5A", step="year", stepmode="backward"),
-                dict(count=10, label="10A", step="year", stepmode="backward"),
-                dict(step="all")
-            ])
+    fig.update_layout(
+        title=titulo,
+        height=430,
+        template="plotly_dark",
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+        font=dict(color="#F8FAFC"),
+        margin=dict(l=20, r=20, t=60, b=30),
+        xaxis_title="",
+        yaxis_title=unidad,
+
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=5, label="5A", step="year", stepmode="backward"),
+                    dict(count=10, label="10A", step="year", stepmode="backward"),
+                    dict(step="all")
+                ])
+            ),
+            rangeslider=dict(visible=True),
+            type="date"
         ),
-        rangeslider=dict(visible=True),
-        type="date"
-    ),
-)
+    )
 
-st.plotly_chart(
-    fig,
-    use_container_width=True,
-    key=f"linea_{titulo}"
-)
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"linea_{titulo}"
+    )
 
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None]
