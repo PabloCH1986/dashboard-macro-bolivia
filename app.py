@@ -168,17 +168,22 @@ def grafico_linea(df, col, titulo, unidad=""):
         hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
     ))
 
-    fig.update_layout(
-        title=titulo,
-        height=430,
-        template="plotly_dark",
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
-        font=dict(color="#F8FAFC"),
-        margin=dict(l=20, r=20, t=60, b=30),
-        xaxis_title="",
-        yaxis_title=unidad,
-    )
+fig.update_layout(
+    title=titulo,
+    height=430,
+    template="plotly_dark",
+    paper_bgcolor="#111827",
+    plot_bgcolor="#111827",
+    font=dict(color="#F8FAFC"),
+    margin=dict(l=20, r=20, t=60, b=30),
+    xaxis_title="",
+    yaxis_title=unidad,
+
+    xaxis=dict(
+        rangeslider=dict(visible=True),
+        type="date"
+    ),
+)
     st.plotly_chart(
     fig,
     use_container_width=True,
