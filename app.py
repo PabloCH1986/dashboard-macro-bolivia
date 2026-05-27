@@ -670,10 +670,10 @@ with tab6:
     tc_of_val, _ = ultimo_valor(df, tc_oficial)
 
     if tc_ref_val is not None and tc_of_val is not None and tc_of_val != 0:
-    brecha_tc = ((tc_ref_val / tc_of_val) - 1) * 100
+        brecha_tc = ((tc_ref_val / tc_of_val) - 1) * 100
     else:
-    brecha_tc = None
-    cred_yoy = variacion_interanual(df, credito_privado)
+        brecha_tc = None
+        cred_yoy = variacion_interanual(df, credito_privado)
 
     # =====================
     # FUNCIONES DE CLASIFICACION
