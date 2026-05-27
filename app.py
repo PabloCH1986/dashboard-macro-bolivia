@@ -180,15 +180,25 @@ fig.update_layout(
     yaxis_title=unidad,
 
     xaxis=dict(
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1A", step="year", stepmode="backward"),
+                dict(count=5, label="5A", step="year", stepmode="backward"),
+                dict(count=10, label="10A", step="year", stepmode="backward"),
+                dict(step="all")
+            ])
+        ),
         rangeslider=dict(visible=True),
         type="date"
     ),
 )
-    st.plotly_chart(
+
+st.plotly_chart(
     fig,
     use_container_width=True,
-    key=f"linea_{titulo}_{uuid.uuid4()}"
-    )
+    key=f"linea_{titulo}"
+)
+
 
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None]
