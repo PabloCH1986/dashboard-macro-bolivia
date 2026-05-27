@@ -207,6 +207,74 @@ def grafico_linea(df, col, titulo, unidad=""):
     key=f"linea_{titulo}_{uuid.uuid4()}"
     )
 
+
+
+def grafico_lineas_multiples(df, cols, titulo, unidad=""):
+    cols = [c for c in cols if c is not None]
+
+    if not cols:
+        st.warning(f"No hay variables disponibles para: {titulo}")
+        return
+
+    fig = go.Figure()
+
+    for c in cols:
+        s = df[["fecha", c]].dropna()
+
+        if not s.empty:
+            fig.add_trace(
+                go.Scatter(
+                    x=s["fecha"],
+                    y=s[c],
+                    mode="lines",
+                    name=c,
+                    line=dict(width=3),
+                    hovertemplate="%{x|%d/%m/%Y}<br>%{y:,.2f}<extra></extra>"
+                )
+            )
+
+    fig.update_layout(
+        title=titulo,
+        height=430,
+        template="plotly_dark",
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+        font=dict(color="#F8FAFC"),
+        margin=dict(l=20, r=20, t=60, b=30),
+        xaxis_title="",
+        yaxis_title=unidad,
+        hovermode="x unified",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ),
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=5, label="5A", step="year", stepmode="backward"),
+                    dict(count=10, label="10A", step="year", stepmode="backward"),
+                    dict(step="all")
+                ])
+            ),
+            rangeslider=dict(visible=True),
+            type="date"
+        )
+    )
+
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(gridcolor="#334155")
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"multi_{titulo}_{uuid.uuid4()}"
+    )
+
+
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None]
 
@@ -477,10 +545,17 @@ with tab3:
 
 with tab4:
     a, b = st.columns(2)
+
     with a:
         grafico_linea(df, base_monetaria, "Base monetaria")
+
     with b:
-        grafico_barras(df, [m1, m2, m3], "Agregados monetarios")
+        grafico_lineas_multiples(
+            df,
+            [m1, m2, m3],
+            "Agregados monetarios: M'1, M'2 y M'3",
+            "Millones de Bs"
+        )
 
 with tab5:
     a, b = st.columns(2)
