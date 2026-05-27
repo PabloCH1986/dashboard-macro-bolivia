@@ -358,8 +358,10 @@ inflacion_acumulada = buscar_columna("Variación acumulada en el año")
 rin = buscar_columna("Reservas internacionales netas")
 tc_venta = buscar_columna("Valor referencial de venta")
 tc_oficial = buscar_columna("Tipo de cambio oficial")
-bol_dep = buscar_columna("Bolivianización de depósitos")
-bol_cred = buscar_columna("Bolivianización de créditos")
+if tc_oficial is None:
+    tc_oficial = buscar_columna("Tipo de cambio de venta")
+bol_dep = buscar_columna("Bolivianización (%)_1")
+bol_cred = buscar_columna("Bolivianización (%)_5")
 base_monetaria = buscar_columna("Base monetaria")
 credito_privado = buscar_columna("Crédito del sistema financiero al sector privado")
 depositos = buscar_columna("Depósitos en entidades")
@@ -670,7 +672,7 @@ with tab6:
     tc_of_val, _ = ultimo_valor(df, tc_oficial)
     
     if tc_ref_val is not None and tc_of_val is not None and tc_of_val != 0:
-        brecha_tc = ((tc_ref_val / tc_of_val) - 1) * 100
+        brecha_tc = abs(tc_ref_val - tc_of_val)
     else:
         brecha_tc = None
     
@@ -728,8 +730,8 @@ with tab6:
 
     riesgo_tc = clasificar_normal(
         brecha_tc,
-        2,
-        8
+        0.20,
+        1.00
     )
     
     riesgo_credito = clasificar_normal(
