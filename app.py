@@ -55,10 +55,12 @@ p,label,div{
     font-weight:700;
 }
 
-.stTabs [aria-selected="true"]{
-    background:#0B3B36 !important;
+.stTabs [aria-selected="true"] *{
     color:white !important;
-    border-bottom:4px solid #C9A227;
+}
+
+.stTabs [data-baseweb="tab"] *{
+    color:#0F172A !important;
 }
 
 /* METRICAS */
@@ -233,7 +235,7 @@ def grafico_linea(df, col, titulo, unidad=""):
     )
     fig.update_traces(line=dict(width=3.5))
     fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(gridcolor="#334155")
+    fig.update_yaxes(gridcolor="#D1D5DB")
 
     st.plotly_chart(
     fig,
@@ -676,7 +678,7 @@ def tarjeta_riesgo(titulo, nivel):
         ">
             {titulo}
         </h3>
-    
+
         <h1 style="
             color:#FFFFFF !important;
             font-size:42px;
@@ -685,10 +687,10 @@ def tarjeta_riesgo(titulo, nivel):
         ">
             {nivel}
         </h1>
-    
+
     </div>
     """, unsafe_allow_html=True)
-
+    
 # =========================
 # RIESGOS
 # =========================
