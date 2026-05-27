@@ -199,7 +199,6 @@ st.plotly_chart(
     key=f"linea_{titulo}"
 )
 
-
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None]
     if not cols:
@@ -218,18 +217,8 @@ def grafico_barras(df, cols, titulo):
 
     data = pd.DataFrame(ultimos)
     fig = px.bar(data, x="Variable", y="Valor", title=titulo, template="plotly_dark")
-    fig.update_layout(
-        height=430,
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
-        font=dict(color="#F8FAFC"),
-        margin=dict(l=20, r=20, t=60, b=80)
-    )
-    st.plotly_chart(
-    fig,
-    use_container_width=True,
-    key=titulo
-)
+fig.update_layout(
+
 
 def semaforo(nombre, valor, bajo, medio, invertido=False):
     if valor is None:
