@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import uuid
 
 st.set_page_config(
     page_title="Dashboard Macroeconómico Ejecutivo - Bolivia",
@@ -178,7 +179,11 @@ def grafico_linea(df, col, titulo, unidad=""):
         xaxis_title="",
         yaxis_title=unidad,
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(
+    fig,
+    use_container_width=True,
+    key=f"linea_{titulo}_{uuid.uuid4()}"
+    )
 
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None]
