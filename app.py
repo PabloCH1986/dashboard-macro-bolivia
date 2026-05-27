@@ -486,21 +486,25 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 
 with tab1:
     a, b = st.columns(2)
+
     with a:
         grafico_linea(df, igae, "IGAE - Actividad económica")
+
     with b:
         grafico_linea(df, inflacion_12m, "Inflación interanual")
 
     c, d = st.columns(2)
+
     with c:
         grafico_linea(df, rin, "Reservas internacionales netas")
+
     with d:
-    grafico_lineas_multiples(
-        df,
-        [credito_privado, depositos],
-        "Crédito y depósitos del sistema financiero",
-        "Millones de Bs"
-    )
+        grafico_lineas_multiples(
+            df,
+            [credito_privado, depositos],
+            "Crédito y depósitos del sistema financiero",
+            "Millones de Bs"
+        )
 
 with tab2:
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
