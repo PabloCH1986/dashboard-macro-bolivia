@@ -658,15 +658,15 @@ def tarjeta_riesgo(titulo, nivel):
     color = colores.get(nivel, "#1E293B")
     line = borde.get(nivel, "#334155")
 
-   st.markdown(f"""
-<div style="
-    background:{color};
-    padding:25px;
-    border-radius:20px;
-    border:2px solid {line};
-    min-height:160px;
-    box-shadow:0 0 20px rgba(0,0,0,0.15);
-">
+        st.markdown(f"""
+    <div style="
+        background:{color};
+        padding:25px;
+        border-radius:20px;
+        border:2px solid {line};
+        min-height:160px;
+        box-shadow:0 0 20px rgba(0,0,0,0.15);
+    ">
 
     <h3 style="
         color:#FFFFFF !important;
