@@ -42,7 +42,7 @@ h1,h2,h3,h4,h5,h6{
 }
 
 /* TEXTO */
-p,label,div{
+p,label{
     color:#1E293B;
 }
 
@@ -660,36 +660,39 @@ def tarjeta_riesgo(titulo, nivel):
     color = colores.get(nivel, "#1E293B")
     line = borde.get(nivel, "#334155")
 
-    st.markdown(f"""
-    <div style="
-        background:{color};
-        padding:25px;
-        border-radius:20px;
-        border:2px solid {line};
-        min-height:160px;
-        box-shadow:0 0 20px rgba(0,0,0,0.15);
-    ">
-
-        <h3 style="
-            color:#FFFFFF !important;
-            margin-bottom:25px;
-            font-size:22px;
-            font-weight:700;
+    st.markdown(
+        f"""
+        <div style="
+            background:{color};
+            padding:25px;
+            border-radius:20px;
+            border:2px solid {line};
+            min-height:160px;
+            box-shadow:0 0 20px rgba(0,0,0,0.15);
         ">
-            {titulo}
-        </h3>
 
-        <h1 style="
-            color:#FFFFFF !important;
-            font-size:42px;
-            margin-top:10px;
-            font-weight:800;
-        ">
-            {nivel}
-        </h1>
+            <h3 style="
+                color:white;
+                margin-bottom:25px;
+                font-size:22px;
+                font-weight:700;
+            ">
+                {titulo}
+            </h3>
 
-    </div>
-    """, unsafe_allow_html=True)
+            <h1 style="
+                color:white;
+                font-size:42px;
+                margin-top:10px;
+                font-weight:800;
+            ">
+                {nivel}
+            </h1>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
     
 # =========================
 # RIESGOS
