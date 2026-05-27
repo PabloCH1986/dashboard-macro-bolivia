@@ -534,11 +534,11 @@ with tab3:
     with a:
         grafico_linea(df, rin, "Reservas internacionales netas")
     with b:
-    grafico_lineas_multiples(
-        df,
-        [tc_venta, tc_oficial],
-        "Tipo de cambio referencial vs oficial",
-        "Bs/$us"
+        grafico_lineas_multiples(
+            df,
+            [tc_venta, tc_oficial],
+            "Tipo de cambio referencial vs oficial",
+            "Bs/$us"
     )
 
     c, d = st.columns(2)
