@@ -197,6 +197,9 @@ def grafico_linea(df, col, titulo, unidad=""):
             type="date"
         ),
     )
+    fig.update_traces(line=dict(width=3.5))
+    fig.update_xaxes(showgrid=False)
+    fig.update_yaxes(gridcolor="#334155")
 
     st.plotly_chart(
     fig,
