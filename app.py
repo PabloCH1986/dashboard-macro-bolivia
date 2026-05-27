@@ -247,6 +247,8 @@ def semaforo(nombre, valor, bajo, medio, invertido=False):
 # =========================
 igae = buscar_columna("IGAE")
 inflacion_12m = buscar_columna("Variación a doce meses")
+inflacion_mensual = buscar_columna("Variación mensual inflacion total")
+inflacion_acumulada = buscar_columna("Variación acumulada en el año")
 rin = buscar_columna("Reservas internacionales netas")
 tc_venta = buscar_columna("Valor referencial de venta")
 base_monetaria = buscar_columna("Base monetaria")
@@ -257,6 +259,11 @@ importaciones = buscar_columna("Importaciones")
 saldo_comercial = buscar_columna("Saldo Comercial")
 divisas = buscar_columna("Divisas")
 oro = buscar_columna("Oro")
+oro_ley_tn = buscar_columna("d/c Oro según Ley N°1503 en Tn")
+oro_ley = buscar_columna("d/c Oro según Ley N°1503")
+recursos_alta_liquidez = buscar_columna("Recursos de Alta Liquidez")
+oro_convertible = buscar_columna("Oro convertible en divisas")
+posicion_fmi = buscar_columna("Posición con el FMI")
 m1 = buscar_columna("M’1")
 m2 = buscar_columna("M’2")
 m3 = buscar_columna("M’3")
@@ -348,6 +355,26 @@ with tab1:
 with tab2:
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
 
+    st.markdown("### Indicadores complementarios de inflación")
+
+    i1, i2 = st.columns(2)
+
+    with i1:
+        grafico_linea(
+            df,
+            inflacion_mensual,
+            "Variación mensual inflación total",
+            "%"
+        )
+
+    with i2:
+        grafico_linea(
+            df,
+            inflacion_acumulada,
+            "Variación acumulada en el año",
+            "%"
+        )
+
 with tab3:
     a, b = st.columns(2)
     with a:
@@ -361,7 +388,18 @@ with tab3:
     with d:
         grafico_linea(df, importaciones, "Importaciones")
 
-    grafico_barras(df, [rin, divisas, oro], "Composición reciente de reservas")
+    grafico_barras(
+    df,
+    [
+        oro_ley_tn,
+        oro_ley,
+        recursos_alta_liquidez,
+        oro_convertible,
+        divisas,
+        posicion_fmi
+    ],
+    "Composición reciente de las Reservas Internacionales"
+)
 
 with tab4:
     a, b = st.columns(2)
