@@ -644,55 +644,51 @@ with tab5:
 def tarjeta_riesgo(titulo, nivel):
 
     colores = {
-        "Alto": "#7F1D1D",
-        "Moderado": "#78350F",
+        "Alto": "#8B1A1A",
+        "Moderado": "#8A3A0A",
         "Bajo": "#14532D",
-        "Sin dato": "#374151"
+        "Sin dato": "#475569"
     }
 
     borde = {
         "Alto": "#EF4444",
         "Moderado": "#F59E0B",
         "Bajo": "#22C55E",
-        "Sin dato": "#9CA3AF"
+        "Sin dato": "#94A3B8"
     }
 
-    color = colores.get(nivel, "#1E293B")
-    line = borde.get(nivel, "#334155")
+    color = colores.get(nivel, "#475569")
+    line = borde.get(nivel, "#94A3B8")
 
-    st.markdown(
-        f"""
+    html = f"""
+    <div style="
+        background:{color};
+        padding:28px;
+        border-radius:20px;
+        border:2px solid {line};
+        min-height:180px;
+        box-shadow:0 8px 22px rgba(0,0,0,0.18);
+    ">
         <div style="
-            background:{color};
-            padding:25px;
-            border-radius:20px;
-            border:2px solid {line};
-            min-height:160px;
-            box-shadow:0 0 20px rgba(0,0,0,0.15);
+            color:white;
+            font-size:24px;
+            font-weight:800;
+            margin-bottom:45px;
         ">
-
-            <h3 style="
-                color:white;
-                margin-bottom:25px;
-                font-size:22px;
-                font-weight:700;
-            ">
-                {titulo}
-            </h3>
-
-            <h1 style="
-                color:white;
-                font-size:42px;
-                margin-top:10px;
-                font-weight:800;
-            ">
-                {nivel}
-            </h1>
-
+            {titulo}
         </div>
-        """,
-        unsafe_allow_html=True
-    )
+
+        <div style="
+            color:white;
+            font-size:44px;
+            font-weight:900;
+        ">
+            {nivel}
+        </div>
+    </div>
+    """
+
+    st.html(html)
     
 # =========================
 # RIESGOS
