@@ -531,7 +531,7 @@ with tab2:
             "%"
         )
 
-with tab3:
+    with tab3:
         a, b = st.columns(2)
         with a:
             grafico_linea(df, rin, "Reservas internacionales netas")
