@@ -21,16 +21,16 @@ SHEET_NAME = "data"
 st.markdown("""
 <style>
 .stApp {
-    background-color: #0B1020;
-    color: #F8FAFC;
+    background-color: #F8FAFC;
+    color: #0F172A;
 }
 
 [data-testid="stHeader"] {
-    background-color: #0B1020;
+    background-color: #F8FAFC;
 }
 
 [data-testid="stSidebar"] {
-    background-color: #111827;
+    background-color: #FFFFFF;
 }
 
 .block-container {
@@ -38,23 +38,23 @@ st.markdown("""
 }
 
 h1, h2, h3, h4, h5, h6, p, label {
-    color: #F8FAFC !important;
+    color: #0F172A !important;
 }
 
 [data-testid="stMetric"] {
-    background: linear-gradient(135deg, #111827, #1E293B);
-    border: 1px solid #334155;
+    background: #FFFFFF;
+    border: 1px solid #CBD5E1;
     padding: 18px;
     border-radius: 18px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 18px rgba(15,23,42,0.12);
 }
 
 [data-testid="stMetricLabel"] {
-    color: #CBD5E1 !important;
+    color: #334155 !important;
 }
 
 [data-testid="stMetricValue"] {
-    color: #F8FAFC !important;
+    color: #0F172A !important;
     font-size: 28px;
 }
 
@@ -63,10 +63,11 @@ h1, h2, h3, h4, h5, h6, p, label {
 }
 
 .stTabs [data-baseweb="tab"] {
-    background-color: #111827;
-    color: #E5E7EB;
+    background-color: #FFFFFF;
+    color: #0F172A;
     border-radius: 12px;
     padding: 10px 18px;
+    border: 1px solid #E2E8F0;
 }
 
 .stTabs [aria-selected="true"] {
@@ -195,10 +196,10 @@ def grafico_linea(df, col, titulo, unidad=""):
     fig.update_layout(
         title=titulo,
         height=430,
-        template="plotly_dark",
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
-        font=dict(color="#F8FAFC"),
+        template="plotly_white",
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=dict(color="#0F172A"),
         margin=dict(l=20, r=20, t=60, b=30),
         xaxis_title="",
         yaxis_title=unidad,
@@ -258,10 +259,10 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     fig.update_layout(
         title=titulo,
         height=430,
-        template="plotly_dark",
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
-        font=dict(color="#F8FAFC"),
+        template="plotly_white",
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=dict(color="#0F172A"),
         margin=dict(l=20, r=20, t=60, b=30),
         xaxis_title="",
         yaxis_title=unidad,
@@ -275,9 +276,9 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         ),
         xaxis=dict(
             rangeselector=dict(
-                bgcolor="#111827",
+                bgcolor="#FFFFFF",
                 activecolor="#2563EB",
-                font=dict(color="#F8FAFC"),
+                font=dict(color="#0F172A"),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
@@ -291,7 +292,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     )
 
     fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(gridcolor="#334155")
+    fig.update_yaxes(gridcolor="#E2E8F0")
 
     st.plotly_chart(
         fig,
@@ -328,14 +329,14 @@ def grafico_barras(df, cols, titulo):
         x="Variable",
         y="Valor",
         title=titulo,
-        template="plotly_dark"
+        template="plotly_white"
     )
 
     fig.update_layout(
         height=430,
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
-        font=dict(color="#F8FAFC"),
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=dict(color="#0F172A"),
         margin=dict(l=20, r=20, t=60, b=80),
         xaxis_title="",
         yaxis_title="Valor"
