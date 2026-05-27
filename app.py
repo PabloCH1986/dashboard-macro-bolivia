@@ -565,23 +565,65 @@ with tab5:
         grafico_linea(df, depositos, "Depósitos del sistema financiero")
 
 with tab6:
-    st.subheader("Semáforo macroeconómico")
-    infl_val, _ = ultimo_valor(df, inflacion_12m)
-    rin_val, _ = ultimo_valor(df, rin)
-    tc_yoy = variacion_interanual(df, tc_venta)
-    cred_yoy = variacion_interanual(df, credito_privado)
+    st.subheader("🚦 Semáforo macroeconómico")
 
-    r1, r2, r3, r4 = st.columns(4)
-    with r1:
-        semaforo("Riesgo inflacionario", infl_val, 3, 6)
-    with r2:
-        semaforo("Posición externa - RIN", rin_val, 2000, 5000, invertido=True)
-    with r3:
-        semaforo("Presión cambiaria", tc_yoy, 2, 8)
-    with r4:
-        semaforo("Expansión crediticia", cred_yoy, 5, 15)
+c1, c2, c3, c4 = st.columns(4)
 
-    st.info("Los umbrales del semáforo son referenciales y pueden ajustarse según criterio técnico.")
+def tarjeta_riesgo(titulo, nivel):
+
+    colores = {
+        "Alto": "#7F1D1D",
+        "Moderado": "#78350F",
+        "Bajo": "#14532D",
+        "Sin dato": "#374151"
+    }
+
+    borde = {
+        "Alto": "#EF4444",
+        "Moderado": "#F59E0B",
+        "Bajo": "#22C55E",
+        "Sin dato": "#9CA3AF"
+    }
+
+    color = colores.get(nivel, "#1E293B")
+    line = borde.get(nivel, "#334155")
+
+    st.markdown(f"""
+    <div style="
+        background:{color};
+        padding:25px;
+        border-radius:20px;
+        border:2px solid {line};
+        min-height:160px;
+        box-shadow:0 0 20px rgba(0,0,0,0.25);
+    ">
+        <h3 style="color:white; margin-bottom:25px;">
+            {titulo}
+        </h3>
+
+        <h1 style="
+            color:white;
+            font-size:42px;
+            margin-top:10px;
+        ">
+            {nivel}
+        </h1>
+    </div>
+    """, unsafe_allow_html=True)
+
+with c1:
+    tarjeta_riesgo("Riesgo inflacionario", riesgo_inflacion)
+
+with c2:
+    tarjeta_riesgo("Posición externa - RIN", riesgo_rin)
+
+with c3:
+    tarjeta_riesgo("Presión cambiaria", riesgo_tc)
+
+with c4:
+    tarjeta_riesgo("Expansión crediticia", riesgo_credito)
+
+st.info("Los umbrales del semáforo son referenciales y pueden ajustarse según criterio técnico.")
 
 st.markdown("---")
 
