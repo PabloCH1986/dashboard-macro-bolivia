@@ -5,7 +5,7 @@ import plotly.express as px
 import uuid
 
 st.set_page_config(
-    page_title="Dashboard Macroeconómico Ejecutivo - Bolivia",
+    page_title="Dashboard Macroeconómico CENGOB - Bolivia",
     layout="wide",
     page_icon="📊"
 )
