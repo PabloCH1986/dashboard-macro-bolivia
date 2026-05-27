@@ -199,9 +199,9 @@ def grafico_linea(df, col, titulo, unidad=""):
     )
 
     st.plotly_chart(
-        fig,
-        use_container_width=True,
-        key=f"linea_{titulo}"
+    fig,
+    use_container_width=True,
+    key=f"linea_{titulo}_{uuid.uuid4()}"
     )
 
 def grafico_barras(df, cols, titulo):
