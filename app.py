@@ -270,17 +270,15 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
         if not s.empty:
 
-            fig.add_trace(
-                go.Scatter(
-                    x=s["fecha"],
-                    y=s[c],
-                    mode="lines",
-                    name=c,
-
-                    line=dict(
-                        width=3.5,
-                        color=colores[i % len(colores)]
-                    ),
+                fig.add_trace(
+                    go.Scatter(
+                        x=s["fecha"],
+                        y=s[c],
+                        mode="lines",
+                        name=nombres.get(c, c),
+                        line=dict(width=3.5, color=colores[i % len(colores)]),
+                    )
+                ),
 
                     hovertemplate='%{x|%d/%m/%Y}<br>%{y:.2f}<extra></extra>'
                 )
