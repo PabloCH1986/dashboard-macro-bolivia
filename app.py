@@ -16,50 +16,6 @@ SHEET_NAME = "data"
 # =========================
 # ESTILO PREMIUM
 # =========================
-st.markdown("""
-<style>
-.main {
-    background-color: #0B1020;
-}
-.block-container {
-    padding-top: 1.5rem;
-}
-h1, h2, h3, h4, h5, h6, p, label {
-    color: #F8FAFC !important;
-}
-[data-testid="stMetric"] {
-    background: linear-gradient(135deg, #111827, #1E293B);
-    border: 1px solid #334155;
-    padding: 18px;
-    border-radius: 18px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-}
-[data-testid="stMetricLabel"] {
-    color: #CBD5E1 !important;
-}
-[data-testid="stMetricValue"] {
-    color: #F8FAFC !important;
-    font-size: 28px;
-}
-[data-testid="stMetricDelta"] {
-    font-size: 15px;
-}
-.stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
-}
-.stTabs [data-baseweb="tab"] {
-    background-color: #111827;
-    color: #E5E7EB;
-    border-radius: 12px;
-    padding: 10px 18px;
-}
-.stTabs [aria-selected="true"] {
-    background-color: #2563EB;
-    color: white;
-}
-</style>
-""", unsafe_allow_html=True)
-
 
 # =============================
 st.markdown("""
@@ -104,8 +60,8 @@ st.markdown("""
 }
 
 /* Texto */
-h1, h2, h3, h4, h5, h6, p, label, div {
-    color: var(--text-color);
+h1, h2, h3, h4, h5, h6, p, label {
+    color: var(--text-color) !important;
 }
 
 /* Tarjetas KPI */
@@ -579,31 +535,23 @@ with tab1:
 
 with tab2:
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
-
     st.markdown("### Indicadores complementarios de inflación")
 
     i1, i2 = st.columns(2)
 
     with i1:
-        grafico_linea(
-            df,
-            inflacion_mensual,
-            "Variación mensual inflación total",
-            "%"
-        )
+        grafico_linea(df, inflacion_mensual, "Variación mensual inflación total", "%")
 
     with i2:
-        grafico_linea(
-            df,
-            inflacion_acumulada,
-            "Variación acumulada en el año",
-            "%"
-        )
+        grafico_linea(df, inflacion_acumulada, "Variación acumulada en el año", "%")
 
-    with tab3:
-        a, b = st.columns(2)
-        with a:
-            grafico_linea(df, rin, "Reservas internacionales netas")
+
+with tab3:
+    a, b = st.columns(2)
+
+    with a:
+        grafico_linea(df, rin, "Reservas internacionales netas")
+
     with b:
         grafico_lineas_multiples(
             df,
@@ -613,26 +561,16 @@ with tab2:
         )
 
     c, d = st.columns(2)
+
     with c:
         grafico_linea(df, exportaciones, "Exportaciones")
+
     with d:
         grafico_linea(df, importaciones, "Importaciones")
 
-    grafico_barras(
-    df,
-    [
-        oro_ley_tn,
-        oro_ley,
-        recursos_alta_liquidez,
-        oro_convertible,
-        divisas,
-        posicion_fmi
-    ],
-    "Composición reciente de las Reservas Internacionales"
-)
 
-    with tab4:
-        a, b = st.columns(2)
+with tab4:
+    a, b = st.columns(2)
 
     with a:
         grafico_linea(df, base_monetaria, "Base monetaria")
@@ -645,12 +583,9 @@ with tab2:
             "Millones de Bs"
         )
 
-# =========================
-# FINANCIERO
-# =========================
 
-    with tab5:
-        a, b = st.columns(2)
+with tab5:
+    a, b = st.columns(2)
 
     with a:
         grafico_lineas_multiples(
@@ -667,7 +602,6 @@ with tab2:
             "Bolivianización de depósitos y créditos",
             "%"
         )
-
 # =========================
 # FUNCION TARJETA RIESGO
 # =========================
