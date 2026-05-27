@@ -295,10 +295,17 @@ st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
 # =========================
 # HEADER
 # =========================
-st.markdown("""
-# 📊 Dashboard Macroeconómico Ejecutivo - Bolivia
-### Monitor de coyuntura económica, monetaria, externa y financiera
-""")
+col_logo, col_titulo = st.columns([1, 5])
+
+with col_logo:
+    st.image("logo_cengob.png", width=240)
+
+with col_titulo:
+    st.markdown("""
+    # Dashboard Macroeconómico Ejecutivo
+    ### Centro de Gobierno - CENGOB  
+    #### Monitor de coyuntura económica, monetaria, externa y financiera
+    """)
 
 st.markdown("---")
 
