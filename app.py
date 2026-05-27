@@ -357,6 +357,9 @@ inflacion_mensual = buscar_columna("Variación mensual inflacion total")
 inflacion_acumulada = buscar_columna("Variación acumulada en el año")
 rin = buscar_columna("Reservas internacionales netas")
 tc_venta = buscar_columna("Valor referencial de venta")
+tc_oficial = buscar_columna("Tipo de cambio oficial")
+bol_dep = buscar_columna("Bolivianización de depósitos")
+bol_cred = buscar_columna("Bolivianización de créditos")
 base_monetaria = buscar_columna("Base monetaria")
 credito_privado = buscar_columna("Crédito del sistema financiero al sector privado")
 depositos = buscar_columna("Depósitos en entidades")
@@ -492,7 +495,12 @@ with tab1:
     with c:
         grafico_linea(df, rin, "Reservas internacionales netas")
     with d:
-        grafico_linea(df, credito_privado, "Crédito al sector privado")
+    grafico_lineas_multiples(
+        df,
+        [credito_privado, depositos],
+        "Crédito y depósitos del sistema financiero",
+        "Millones de Bs"
+    )
 
 with tab2:
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
@@ -522,7 +530,12 @@ with tab3:
     with a:
         grafico_linea(df, rin, "Reservas internacionales netas")
     with b:
-        grafico_linea(df, tc_venta, "Tipo de cambio referencial de venta")
+    grafico_lineas_multiples(
+        df,
+        [tc_venta, tc_oficial],
+        "Tipo de cambio referencial vs oficial",
+        "Bs/$us"
+    )
 
     c, d = st.columns(2)
     with c:
@@ -565,18 +578,29 @@ with tab5:
     a, b = st.columns(2)
 
     with a:
-        grafico_linea(
+        grafico_lineas_multiples(
             df,
-            credito_privado,
-            "Crédito al sector privado"
+            [credito_privado, depositos],
+            "Crédito y depósitos del sistema financiero",
+            "Millones de Bs"
         )
 
     with b:
         grafico_linea(
             df,
-            depositos,
-            "Depósitos del sistema financiero"
+            bol_dep,
+            "Bolivianización de depósitos",
+            "%"
         )
+
+    st.markdown("### Bolivianización del crédito")
+
+    grafico_linea(
+        df,
+        bol_cred,
+        "Bolivianización de créditos",
+        "%"
+    )
 
 # =========================
 # FUNCION TARJETA RIESGO
@@ -638,7 +662,13 @@ with tab6:
     infl_val, _ = ultimo_valor(df, inflacion_12m)
     rin_val, _ = ultimo_valor(df, rin)
 
-    tc_yoy = variacion_interanual(df, tc_venta)
+    tc_ref_val, _ = ultimo_valor(df, tc_venta)
+    tc_of_val, _ = ultimo_valor(df, tc_oficial)
+
+    if tc_ref_val is not None and tc_of_val is not None and tc_of_val != 0:
+    brecha_tc = ((tc_ref_val / tc_of_val) - 1) * 100
+    else:
+    brecha_tc = None
     cred_yoy = variacion_interanual(df, credito_privado)
 
     # =====================
@@ -689,12 +719,7 @@ with tab6:
         5000
     )
 
-    riesgo_tc = clasificar_normal(
-        tc_yoy,
-        2,
-        8
-    )
-
+    riesgo_tc 
     riesgo_credito = clasificar_normal(
         cred_yoy,
         5,
