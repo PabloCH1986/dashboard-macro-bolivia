@@ -668,26 +668,26 @@ def tarjeta_riesgo(titulo, nivel):
         box-shadow:0 0 20px rgba(0,0,0,0.15);
     ">
 
-    <h3 style="
-        color:#FFFFFF !important;
-        margin-bottom:25px;
-        font-size:22px;
-        font-weight:700;
-    ">
-        {titulo}
-    </h3>
-
-    <h1 style="
-        color:#FFFFFF !important;
-        font-size:42px;
-        margin-top:10px;
-        font-weight:800;
-    ">
-        {nivel}
-    </h1>
-
-</div>
-""", unsafe_allow_html=True)
+        <h3 style="
+            color:#FFFFFF !important;
+            margin-bottom:25px;
+            font-size:22px;
+            font-weight:700;
+        ">
+            {titulo}
+        </h3>
+    
+        <h1 style="
+            color:#FFFFFF !important;
+            font-size:42px;
+            margin-top:10px;
+            font-weight:800;
+        ">
+            {nivel}
+        </h1>
+    
+    </div>
+    """, unsafe_allow_html=True)
 
 # =========================
 # RIESGOS
