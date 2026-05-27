@@ -195,7 +195,7 @@ def grafico_linea(df, col, titulo, unidad=""):
             x=s["fecha"],
             y=s[col],
             mode="lines",
-            line=dict(width=3.5, color="#2563EB"),
+            line=dict(width=3.5, color="#0B3B36")
             hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
         )
     )
@@ -213,9 +213,13 @@ def grafico_linea(df, col, titulo, unidad=""):
 
         xaxis=dict(
             rangeselector=dict(
-                bgcolor="#111827",
-                activecolor="#2563EB",
-                font=dict(color="#F8FAFC"),
+            bgcolor="#E5E7EB",
+            activecolor="#0B3B36",
+            
+            font=dict(
+                color="#0F172A",
+                size=13
+            ),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
@@ -300,9 +304,13 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         ),
         xaxis=dict(
             rangeselector=dict(
-                bgcolor="#FFFFFF",
-                activecolor="#2563EB",
-                font=dict(color="#0F172A"),
+            bgcolor="#E5E7EB",
+            activecolor="#0B3B36",
+            
+            font=dict(
+                color="#0F172A",
+                size=13
+            ),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
