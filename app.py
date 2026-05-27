@@ -205,7 +205,11 @@ def grafico_barras(df, cols, titulo):
         font=dict(color="#F8FAFC"),
         margin=dict(l=20, r=20, t=60, b=80)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(
+    fig,
+    use_container_width=True,
+    key=titulo
+)
 
 def semaforo(nombre, valor, bajo, medio, invertido=False):
     if valor is None:
