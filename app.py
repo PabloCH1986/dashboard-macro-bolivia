@@ -299,29 +299,53 @@ st.markdown("""
 <div style="
     display:flex;
     align-items:center;
-    gap:28px;
-    background:#FFFFFF;
-    padding:22px 28px;
-    border-radius:22px;
+    gap:30px;
+    background:#111827;
+    padding:25px 35px;
+    border-radius:24px;
+    border:1px solid #334155;
     margin-bottom:25px;
 ">
-    <img src="logo_cengob.png" style="width:300px; height:auto;">
+
+    <img src="logo_cengob.png"
+         style="
+         width:260px;
+         height:auto;
+         background:white;
+         padding:12px;
+         border-radius:16px;
+         ">
+
     <div>
-        <h1 style="color:#0F172A; margin:0; font-size:42px;">
+        <h1 style="
+            color:#F8FAFC;
+            margin:0;
+            font-size:48px;
+            font-weight:800;
+        ">
             Dashboard Macroeconómico Ejecutivo
         </h1>
-        <h3 style="color:#334155; margin:8px 0 0 0;">
+
+        <h2 style="
+            color:#CBD5E1;
+            margin-top:10px;
+            font-size:28px;
+            font-weight:600;
+        ">
             Centro de Gobierno - CENGOB
-        </h3>
-        <h4 style="color:#475569; margin:8px 0 0 0;">
+        </h2>
+
+        <p style="
+            color:#94A3B8;
+            margin-top:14px;
+            font-size:20px;
+        ">
             Monitor de coyuntura económica, monetaria, externa y financiera
-        </h4>
+        </p>
     </div>
+
 </div>
 """, unsafe_allow_html=True)
-
-st.markdown("---")
-
 # =========================
 # KPIs
 # =========================
