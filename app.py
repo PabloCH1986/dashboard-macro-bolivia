@@ -255,14 +255,37 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
     fig = go.Figure()
 
-    # COLORES
+    # =====================
+    # COLORES CENGOB
+    # =====================
+
     colores = [
-    "#0B3B36",  # verde petróleo
-    "#C9A227",  # dorado
-    "#556B2F",  # oliva
-    "#C2410C",  # alerta
-    "#475569"   # gris ejecutivo
+        "#0B3B36",  # verde petróleo
+        "#C9A227",  # dorado
+        "#556B2F",  # oliva
+        "#C2410C",  # naranja
+        "#475569"   # gris
     ]
+
+    # =====================
+    # NOMBRES CORTOS
+    # =====================
+
+    nombres = {
+        credito_privado: "Crédito privado",
+        depositos: "Depósitos",
+        m1: "M1",
+        m2: "M2",
+        m3: "M3",
+        tc_venta: "TC Referencial",
+        tc_oficial: "TC Oficial",
+        bol_dep: "Boliv. depósitos",
+        bol_cred: "Boliv. créditos"
+    }
+
+    # =====================
+    # GRAFICOS
+    # =====================
 
     for i, c in enumerate(cols):
 
@@ -270,19 +293,23 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
         if not s.empty:
 
-                fig.add_trace(
-                    go.Scatter(
-                        x=s["fecha"],
-                        y=s[c],
-                        mode="lines",
-                        name=nombres.get(c, c),
-                        line=dict(width=3.5, color=colores[i % len(colores)]),
-                    )
-                ),
-
-                    hovertemplate='%{x|%d/%m/%Y}<br>%{y:.2f}<extra></extra>'
+            fig.add_trace(
+                go.Scatter(
+                    x=s["fecha"],
+                    y=s[c],
+                    mode="lines",
+                    name=nombres.get(c, c),
+                    line=dict(
+                        width=3.5,
+                        color=colores[i % len(colores)]
+                    ),
+                    hovertemplate="%{x|%d/%m/%Y}<br>%{y:,.2f}<extra></extra>"
                 )
             )
+
+    # =====================
+    # LAYOUT
+    # =====================
 
     fig.update_layout(
         title=titulo,
@@ -295,6 +322,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         xaxis_title="",
         yaxis_title=unidad,
         hovermode="x unified",
+
         legend=dict(
             orientation="h",
             yanchor="bottom",
@@ -302,15 +330,17 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
             xanchor="right",
             x=1
         ),
+
         xaxis=dict(
             rangeselector=dict(
-            bgcolor="#E5E7EB",
-            activecolor="#0B3B36",
-            
-            font=dict(
-                color="#0F172A",
-                size=13
-            ),
+                bgcolor="#E5E7EB",
+                activecolor="#0B3B36",
+
+                font=dict(
+                    color="#FFFFFF",
+                    size=13
+                ),
+
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
@@ -318,13 +348,19 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
                     dict(step="all")
                 ])
             ),
+
             rangeslider=dict(visible=True),
             type="date"
         )
     )
 
-    fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(gridcolor="#D6D3D1")
+    fig.update_xaxes(
+        showgrid=False
+    )
+
+    fig.update_yaxes(
+        gridcolor="#D6D3D1"
+    )
 
     st.plotly_chart(
         fig,
