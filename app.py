@@ -741,7 +741,21 @@ st.markdown("---")
 # EXPLORADOR
 # =========================
 st.subheader("🔎 Explorador de variables")
-variables = [c for c in df.columns if c != "fecha"]
+variables_excluir = [
+    "Bolivianización (%)_1",
+    "Bolivianización (%)_2",
+    "Bolivianización (%)_3",
+    "Bolivianización (%)_4",
+    "A la vista",
+    "Caja de ahorro",
+    "Plazo",
+    "Otros"
+]
+
+variables = [
+    c for c in df.columns
+    if c != "fecha" and c not in variables_excluir
+]
 seleccion = st.selectbox("Selecciona cualquier variable del Excel", variables)
 grafico_linea(df, seleccion, seleccion)
 
