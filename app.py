@@ -20,83 +20,68 @@ SHEET_NAME = "data"
 
 st.markdown("""
 <style>
-.stApp {
-    background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 100%);
-    color: #0F172A;
+
+.stApp{
+    background-color:#F3F4EF;
 }
 
-[data-testid="stHeader"] {
-    background-color: #F8FAFC;
+/* HEADER */
+[data-testid="stHeader"]{
+    background:#0B3B36;
 }
 
-[data-testid="stSidebar"] {
-    background-color: #FFFFFF;
+/* SIDEBAR */
+[data-testid="stSidebar"]{
+    background:#F8FAFC;
 }
 
-.block-container {
-    padding-top: 1.5rem;
+/* TITULOS */
+h1,h2,h3,h4,h5,h6{
+    color:#0B3B36 !important;
+    font-weight:800 !important;
 }
 
-h1, h2, h3, h4, h5, h6, p, label {
-    color: #0F172A !important;
+/* TEXTO */
+p,label,div{
+    color:#1E293B;
 }
 
-/* KPIs */
-[data-testid="stMetric"] {
-    background: linear-gradient(135deg, #FFFFFF 0%, #EAF1FF 100%);
-    border-left: 6px solid #2563EB;
-    border-top: 1px solid #DBEAFE;
-    border-right: 1px solid #DBEAFE;
-    border-bottom: 1px solid #DBEAFE;
-    padding: 18px;
-    border-radius: 18px;
-    box-shadow: 0 8px 22px rgba(15,23,42,0.12);
+/* TABS */
+.stTabs [data-baseweb="tab"]{
+    background:#E7E5E4;
+    color:#0B3B36;
+    border-radius:12px;
+    padding:10px 18px;
+    font-weight:700;
 }
 
-[data-testid="stMetricLabel"] {
-    color: #1E3A8A !important;
-    font-weight: 700;
+.stTabs [aria-selected="true"]{
+    background:#0B3B36 !important;
+    color:#FACC15 !important;
+    border-bottom:4px solid #C9A227;
 }
 
-[data-testid="stMetricValue"] {
-    color: #0F172A !important;
-    font-size: 28px;
-    font-weight: 800;
+/* METRICAS */
+[data-testid="stMetric"]{
+    background:white;
+    border-left:6px solid #C9A227;
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
 }
 
-[data-testid="stMetricDelta"] {
-    font-size: 15px;
-    font-weight: 700;
+/* GRAFICOS */
+.js-plotly-plot{
+    border-radius:18px;
+    overflow:hidden;
 }
 
-/* Tabs */
-.stTabs [data-baseweb="tab"] {
-    background: linear-gradient(135deg, #FFFFFF, #EEF2FF);
-    color: #0F172A;
-    border-radius: 14px;
-    padding: 11px 20px;
-    border: 1px solid #CBD5E1;
-    font-weight: 700;
+/* ALERTAS */
+.stAlert{
+    border-left:6px solid #C9A227;
+    border-radius:14px;
 }
 
-.stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, #2563EB, #1D4ED8);
-    color: white !important;
-    border-bottom: 4px solid #D4AF37;
-}
-
-/* Mensajes */
-.stAlert {
-    border-radius: 14px;
-    border-left: 6px solid #D4AF37;
-}
-
-/* Separadores */
-hr {
-    border: none;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #CBD5E1, transparent);
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -219,7 +204,7 @@ def grafico_linea(df, col, titulo, unidad=""):
         title=titulo,
         height=430,
         template="plotly_white",
-        paper_bgcolor="#FFFFFF",
+        paper_bgcolor="#F8FAFC",
         plot_bgcolor="#FFFFFF",
         font=dict(color="#0F172A"),
         margin=dict(l=20, r=20, t=60, b=30),
@@ -265,7 +250,13 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     fig = go.Figure()
 
     # COLORES
-    colores = ["#2563EB", "#EF4444", "#10B981", "#F59E0B", "#8B5CF6"]
+    colores = [
+    "#0B3B36",  # verde petróleo
+    "#C9A227",  # dorado
+    "#556B2F",  # oliva
+    "#C2410C",  # alerta
+    "#475569"   # gris ejecutivo
+    ]
 
     for i, c in enumerate(cols):
 
@@ -293,7 +284,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         title=titulo,
         height=430,
         template="plotly_white",
-        paper_bgcolor="#FFFFFF",
+        paper_bgcolor="#F8FAFC",
         plot_bgcolor="#FFFFFF",
         font=dict(color="#0F172A"),
         margin=dict(l=20, r=20, t=60, b=30),
@@ -325,7 +316,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     )
 
     fig.update_xaxes(showgrid=False)
-    fig.update_yaxes(gridcolor="#E2E8F0")
+    fig.update_yaxes(gridcolor="#D6D3D1")
 
     st.plotly_chart(
         fig,
@@ -367,7 +358,7 @@ def grafico_barras(df, cols, titulo):
 
     fig.update_layout(
         height=430,
-        paper_bgcolor="#FFFFFF",
+        paper_bgcolor="#F8FAFC",
         plot_bgcolor="#FFFFFF",
         font=dict(color="#0F172A"),
         margin=dict(l=20, r=20, t=60, b=80),
