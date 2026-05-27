@@ -529,17 +529,17 @@ with tab2:
             "%"
         )
 
-with tab3:
-    a, b = st.columns(2)
-    with a:
-        grafico_linea(df, rin, "Reservas internacionales netas")
+    with tab3:
+        a, b = st.columns(2)
+        with a:
+            grafico_linea(df, rin, "Reservas internacionales netas")
     with b:
         grafico_lineas_multiples(
             df,
             [tc_venta, tc_oficial],
             "Tipo de cambio referencial vs oficial",
             "Bs/$us"
-    )
+        )
 
     c, d = st.columns(2)
     with c:
@@ -560,8 +560,8 @@ with tab3:
     "Composición reciente de las Reservas Internacionales"
 )
 
-with tab4:
-    a, b = st.columns(2)
+    with tab4:
+        a, b = st.columns(2)
 
     with a:
         grafico_linea(df, base_monetaria, "Base monetaria")
@@ -578,8 +578,8 @@ with tab4:
 # FINANCIERO
 # =========================
 
-with tab5:
-    a, b = st.columns(2)
+    with tab5:
+        a, b = st.columns(2)
 
     with a:
         grafico_lineas_multiples(
@@ -668,12 +668,15 @@ with tab6:
 
     tc_ref_val, _ = ultimo_valor(df, tc_venta)
     tc_of_val, _ = ultimo_valor(df, tc_oficial)
-
+    
     if tc_ref_val is not None and tc_of_val is not None and tc_of_val != 0:
         brecha_tc = ((tc_ref_val / tc_of_val) - 1) * 100
     else:
         brecha_tc = None
-        cred_yoy = variacion_interanual(df, credito_privado)
+    
+    cred_yoy = variacion_interanual(df, credito_privado)
+
+    
 
     # =====================
     # FUNCIONES DE CLASIFICACION
@@ -723,7 +726,12 @@ with tab6:
         5000
     )
 
-    riesgo_tc 
+    riesgo_tc = clasificar_normal(
+        brecha_tc,
+        2,
+        8
+    )
+    
     riesgo_credito = clasificar_normal(
         cred_yoy,
         5,
