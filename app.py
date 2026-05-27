@@ -206,24 +206,50 @@ def grafico_linea(df, col, titulo, unidad=""):
 
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None]
+
     if not cols:
         st.warning("No hay variables disponibles.")
         return
 
     ultimos = []
+
     for c in cols:
         v, f = ultimo_valor(df, c)
         if v is not None:
-            ultimos.append({"Variable": c[:45], "Valor": v})
+            ultimos.append({
+                "Variable": str(c)[:45],
+                "Valor": v
+            })
 
     if not ultimos:
         st.warning("Sin datos.")
         return
 
     data = pd.DataFrame(ultimos)
-    fig = px.bar(data, x="Variable", y="Valor", title=titulo, template="plotly_dark")
-fig.update_layout(
 
+    fig = px.bar(
+        data,
+        x="Variable",
+        y="Valor",
+        title=titulo,
+        template="plotly_dark"
+    )
+
+    fig.update_layout(
+        height=430,
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+        font=dict(color="#F8FAFC"),
+        margin=dict(l=20, r=20, t=60, b=80),
+        xaxis_title="",
+        yaxis_title="Valor"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"barras_{titulo}_{uuid.uuid4()}"
+    )
 
 def semaforo(nombre, valor, bajo, medio, invertido=False):
     if valor is None:
