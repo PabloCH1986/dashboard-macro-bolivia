@@ -205,6 +205,9 @@ def grafico_linea(df, col, titulo, unidad=""):
 
         xaxis=dict(
             rangeselector=dict(
+                bgcolor="#111827",
+                activecolor="#2563EB",
+                font=dict(color="#F8FAFC"),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
@@ -272,6 +275,9 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         ),
         xaxis=dict(
             rangeselector=dict(
+                bgcolor="#111827",
+                activecolor="#2563EB",
+                font=dict(color="#F8FAFC"),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
