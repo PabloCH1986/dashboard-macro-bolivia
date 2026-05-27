@@ -295,57 +295,42 @@ st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
 # =========================
 # HEADER
 # =========================
-st.markdown("""
-<div style="
-    display:flex;
-    align-items:center;
-    gap:30px;
-    background:#111827;
-    padding:25px 35px;
-    border-radius:24px;
-    border:1px solid #334155;
-    margin-bottom:25px;
-">
 
-    <img src="logo_cengob.png"
-         style="
-         width:260px;
-         height:auto;
-         background:white;
-         padding:12px;
-         border-radius:16px;
-         ">
+col1, col2 = st.columns([1.2, 4])
 
-    <div>
-        <h1 style="
-            color:#F8FAFC;
-            margin:0;
-            font-size:48px;
-            font-weight:800;
-        ">
-            Dashboard Macroeconómico Ejecutivo
-        </h1>
+with col1:
+    st.image("logo_cengob.png", width=260)
 
-        <h2 style="
-            color:#CBD5E1;
-            margin-top:10px;
-            font-size:28px;
-            font-weight:600;
-        ">
-            Centro de Gobierno - CENGOB
-        </h2>
+with col2:
+    st.markdown("""
+    <h1 style="
+        color:#F8FAFC;
+        margin-bottom:0;
+        font-size:48px;
+        font-weight:800;
+    ">
+        Dashboard Macroeconómico Ejecutivo
+    </h1>
 
-        <p style="
-            color:#94A3B8;
-            margin-top:14px;
-            font-size:20px;
-        ">
-            Monitor de coyuntura económica, monetaria, externa y financiera
-        </p>
-    </div>
+    <h2 style="
+        color:#CBD5E1;
+        margin-top:10px;
+        font-size:28px;
+        font-weight:600;
+    ">
+        Centro de Gobierno - CENGOB
+    </h2>
 
-</div>
-""", unsafe_allow_html=True)
+    <p style="
+        color:#94A3B8;
+        margin-top:14px;
+        font-size:20px;
+    ">
+        Monitor de coyuntura económica, monetaria, externa y financiera
+    </p>
+    """, unsafe_allow_html=True)
+
+st.markdown("---")
 
 
 # =========================
