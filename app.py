@@ -49,7 +49,7 @@ p,label,div{
 /* TABS */
 .stTabs [data-baseweb="tab"]{
     background:#E7E5E4;
-    color:#0B3B36;
+    color:#1E293B !important;
     border-radius:12px;
     padding:10px 18px;
     font-weight:700;
@@ -57,7 +57,7 @@ p,label,div{
 
 .stTabs [aria-selected="true"]{
     background:#0B3B36 !important;
-    color:#FACC15 !important;
+    color:white !important;
     border-bottom:4px solid #C9A227;
 }
 
