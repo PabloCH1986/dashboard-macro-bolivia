@@ -183,7 +183,19 @@ def kpi(df, titulo, col, unidad=""):
 
     delta = f"{yoy:,.1f}% interanual" if yoy is not None else None
     st.metric(titulo, f"{formato_numero(valor)} {unidad}", delta)
-    st.caption(f"Último dato: {fecha.strftime('%d/%m/%Y')}")
+    st.markdown(
+    f"""
+    <p style="
+        color:#0B3B36;
+        font-size:15px;
+        margin-top:6px;
+        font-weight:500;
+    ">
+        Último dato: {fecha.strftime('%d/%m/%Y')}
+    </p>
+    """,
+    unsafe_allow_html=True
+    )
 
 def grafico_linea(df, col, titulo, unidad=""):
 
