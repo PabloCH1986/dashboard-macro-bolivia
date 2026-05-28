@@ -210,35 +210,56 @@ def grafico_linea(df, col, titulo, unidad=""):
 )
 
     fig.update_layout(
+    
         title=titulo,
         height=430,
-        template="plotly_dark",
     
-        paper_bgcolor="#243447",
-        plot_bgcolor="#243447",
+        template="plotly_white",
     
+        # FONDO CELESTE CLARO
+        paper_bgcolor="#DCEAF7",
+        plot_bgcolor="#DCEAF7",
+    
+        # TEXTO NEGRO
         font=dict(
-            color="#E5E7EB",
+            color="#000000",
             size=14
         ),
     
+        # TITULOS NEGROS
         title_font=dict(
-            color="#CBD5E1",
+            color="#000000",
             size=22
         ),
     
-        margin=dict(l=20, r=20, t=60, b=30),
+        margin=dict(
+            l=20,
+            r=20,
+            t=60,
+            b=30
+        ),
     
         xaxis_title="",
         yaxis_title=unidad,
     
+        hovermode="x unified",
+    
+        legend=dict(
+            font=dict(
+                color="#000000",
+                size=13
+            )
+        ),
+    
         xaxis=dict(
+    
             rangeselector=dict(
-                bgcolor="#1F2937",
+    
+                bgcolor="#FFFFFF",
                 activecolor="#0B3B36",
     
                 font=dict(
-                    color="#F9FAFB",
+                    color="#000000",
                     size=13
                 ),
     
@@ -246,34 +267,43 @@ def grafico_linea(df, col, titulo, unidad=""):
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
                     dict(count=10, label="10A", step="year", stepmode="backward"),
-                    dict(step="all")
+                    dict(step="all", label="all")
                 ])
             ),
     
             rangeslider=dict(
                 visible=True,
-                bgcolor="#111827"
+                bgcolor="#CFE3F5",
+                bordercolor="#94A3B8"
             ),
     
             type="date",
     
             tickfont=dict(
-                color="#D1D5DB"
-            )
+                color="#000000"
+            ),
+    
+            gridcolor="rgba(0,0,0,0.08)"
         ),
     
         yaxis=dict(
-            gridcolor="rgba(255,255,255,0.15)",
+    
             tickfont=dict(
-                color="#D1D5DB"
-            )
+                color="#000000"
+            ),
+    
+            gridcolor="rgba(0,0,0,0.12)",
+    
+            zerolinecolor="rgba(0,0,0,0.25)"
         )
     )
 
-
     
     fig.update_traces(line=dict(width=3.5))
-    fig.update_xaxes(showgrid=False)
+    fig.update_xaxes(
+    showgrid=True,
+    gridcolor="rgba(0,0,0,0.08)"
+    )
     fig.update_yaxes(gridcolor="#D1D5DB")
 
     st.plotly_chart(
