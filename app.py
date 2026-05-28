@@ -202,37 +202,66 @@ def grafico_linea(df, col, titulo, unidad=""):
     )
 )
 
-    fig.update_layout(
-        title=titulo,
-        height=430,
-        template="plotly_white",
-        paper_bgcolor="#F8FAFC",
-        plot_bgcolor="#FFFFFF",
-        font=dict(color="#0F172A"),
-        margin=dict(l=20, r=20, t=60, b=30),
-        xaxis_title="",
-        yaxis_title=unidad,
-
-        xaxis=dict(
-            rangeselector=dict(
-            bgcolor="#E5E7EB",
-            activecolor="#0B3B36",
-            
+        fig.update_layout(
+            title=titulo,
+            height=430,
+            template="plotly_dark",
+        
+            paper_bgcolor="#111827",
+            plot_bgcolor="#111827",
+        
             font=dict(
-                color="#0F172A",
-                size=13
+                color="#E5E7EB",
+                size=14
             ),
-                buttons=list([
-                    dict(count=1, label="1A", step="year", stepmode="backward"),
-                    dict(count=5, label="5A", step="year", stepmode="backward"),
-                    dict(count=10, label="10A", step="year", stepmode="backward"),
-                    dict(step="all")
-                ])
+        
+            title_font=dict(
+                color="#F9FAFB",
+                size=22
             ),
-            rangeslider=dict(visible=True),
-            type="date"
-        ),
-    )
+        
+            margin=dict(l=20, r=20, t=60, b=30),
+        
+            xaxis_title="",
+            yaxis_title=unidad,
+        
+            xaxis=dict(
+                rangeselector=dict(
+                    bgcolor="#1F2937",
+                    activecolor="#0B3B36",
+        
+                    font=dict(
+                        color="#F9FAFB",
+                        size=13
+                    ),
+        
+                    buttons=list([
+                        dict(count=1, label="1A", step="year", stepmode="backward"),
+                        dict(count=5, label="5A", step="year", stepmode="backward"),
+                        dict(count=10, label="10A", step="year", stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+        
+                rangeslider=dict(
+                    visible=True,
+                    bgcolor="#111827"
+                ),
+        
+                type="date",
+        
+                tickfont=dict(
+                    color="#D1D5DB"
+                )
+            ),
+        
+            yaxis=dict(
+                gridcolor="#374151",
+                tickfont=dict(
+                    color="#D1D5DB"
+                )
+            )
+        )
     fig.update_traces(line=dict(width=3.5))
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(gridcolor="#D1D5DB")
@@ -315,9 +344,9 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         title=titulo,
         height=430,
         template="plotly_white",
-        paper_bgcolor="#F8FAFC",
-        plot_bgcolor="#FFFFFF",
-        font=dict(color="#0F172A"),
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+        font=dict(color="#E5E7EB"),
         margin=dict(l=20, r=20, t=60, b=30),
         xaxis_title="",
         yaxis_title=unidad,
@@ -333,7 +362,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
         xaxis=dict(
             rangeselector=dict(
-                bgcolor="#E5E7EB",
+                bgcolor="#1F2937",
                 activecolor="#0B3B36",
 
                 font=dict(
@@ -355,11 +384,13 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     )
 
     fig.update_xaxes(
-        showgrid=False
+        showgrid=False,
+        tickfont=dict(color="#D1D5DB")
     )
-
+    
     fig.update_yaxes(
-        gridcolor="#D6D3D1"
+        gridcolor="#374151",
+        tickfont=dict(color="#D1D5DB")
     )
 
     st.plotly_chart(
@@ -402,9 +433,9 @@ def grafico_barras(df, cols, titulo):
 
     fig.update_layout(
         height=430,
-        paper_bgcolor="#F8FAFC",
-        plot_bgcolor="#FFFFFF",
-        font=dict(color="#0F172A"),
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+        font=dict(color="#E5E7EB"),
         margin=dict(l=20, r=20, t=60, b=80),
         xaxis_title="",
         yaxis_title="Valor"
@@ -518,7 +549,7 @@ with col2:
     </h1>
 
     <h2 style="
-        color:#CBD5E1;
+        color:#E5E7EB;
         margin-top:10px;
         font-size: clamp(18px, 3vw, 28px);
         font-weight:600;
@@ -527,7 +558,7 @@ with col2:
     </h2>
 
     <p style="
-        color:#94A3B8;
+        color:#CBD5E1;
         margin-top:14px;
         font-size: clamp(14px, 2vw, 20px);
     ">
