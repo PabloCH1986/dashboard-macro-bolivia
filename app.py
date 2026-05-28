@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import uuid
+import base64
 
 st.set_page_config(
     page_title="Dashboard Macroeconómico CENGOB - Bolivia",
@@ -601,22 +602,35 @@ col1, col2 = st.columns([1.2, 5])
 
 with col1:
 
-    st.markdown("""
-    <div style="
-        background:white;
-        padding:18px;
-        border-radius:20px;
-        box-shadow:0 4px 14px rgba(0,0,0,0.08);
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        height:200px;
-    ">
-    """, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div style="
+            background:white;
+            border-radius:22px;
+            box-shadow:0 4px 14px rgba(0,0,0,0.08);
 
-    st.image("logo_cengob.png", width=180)
+            height:200px;
 
-    st.markdown("</div>", unsafe_allow_html=True)
+            display:flex;
+            justify-content:center;
+            align-items:center;
+
+            padding:20px;
+            margin-top:10px;
+        ">
+
+            <img src="data:image/png;base64,{}"
+                 style="
+                    width:170px;
+                    object-fit:contain;
+                 ">
+
+        </div>
+        """.format(
+            base64.b64encode(open("logo_cengob.png", "rb").read()).decode()
+        ),
+        unsafe_allow_html=True
+    )
 
 with col2:
     st.markdown("""
