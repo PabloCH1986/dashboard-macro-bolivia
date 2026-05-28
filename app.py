@@ -597,15 +597,30 @@ st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
 # HEADER
 # =========================
 
-col1, col2 = st.columns([1, 5])
+col1, col2 = st.columns([1.2, 5])
 
 with col1:
-    st.image("logo_cengob.png", width=160)
+
+    st.markdown(
+        """
+        <div style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:220px;
+        ">
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.image("logo_cengob.png", width=190)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 with col2:
     st.markdown("""
     <h1 style="
-        color:#F8FAFC;
+        color:#0B3B36;
         margin-bottom:0;
         font-size: clamp(28px, 5vw, 48px);
         font-weight:800;
