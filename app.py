@@ -568,7 +568,7 @@ with col2:
     </h2>
 
     <p style="
-        color:#CBD5E1;
+        color:#0B3B36;
         margin-top:14px;
         font-size: clamp(14px, 2vw, 20px);
     ">
