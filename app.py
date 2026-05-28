@@ -22,7 +22,7 @@ st.markdown("""
 <style>
 
 .stApp{
-    background-color:#F3F4EF;
+    background-color:#EEF2F5;
 }
 
 /* HEADER */
@@ -65,11 +65,13 @@ p,label{
 
 /* METRICAS */
 [data-testid="stMetric"]{
-    background:white;
-    border-left:6px solid #C9A227;
+    background:#F8FAFC;
+    border-left:5px solid #C8A951;
+    border:1px solid #E2E8F0;
     border-radius:18px;
     padding:18px;
-    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+    box-shadow:0 4px 14px rgba(0,0,0,0.05);
+    transition:0.3s;
 }
 
 /* GRAFICOS */
@@ -80,7 +82,7 @@ p,label{
 
 /* ALERTAS */
 .stAlert{
-    border-left:6px solid #C9A227;
+    border-left:5px solid #C8A951;
     border-radius:14px;
 }
 
