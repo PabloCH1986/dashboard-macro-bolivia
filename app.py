@@ -669,19 +669,19 @@ with c1:
 with c2:
     kpi(df, "Inflación interanual", inflacion_12m, "%")
 with c3:
-    kpi(df, "RIN", rin, "millones $us")
+    kpi(df, "RIN", rin, "MM $us")
 with c4:
     kpi(df, "Tipo de cambio venta", tc_venta, "Bs/$us")
 
 c5, c6, c7, c8 = st.columns(4)
 with c5:
-    kpi(df, "Base monetaria", base_monetaria, "millones Bs")
+    kpi(df, "Base monetaria", base_monetaria, "MM Bs")
 with c6:
-    kpi(df, "Crédito privado", credito_privado, "millones Bs")
+    kpi(df, "Crédito privado", credito_privado, "MM Bs")
 with c7:
-    kpi(df, "Depósitos", depositos, "millones Bs")
+    kpi(df, "Depósitos", depositos, "MM Bs")
 with c8:
-    kpi(df, "Saldo comercial", saldo_comercial, "millones $us")
+    kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
 
 st.markdown("---")
 
