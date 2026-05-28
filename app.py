@@ -66,7 +66,7 @@ p,label{
 /* METRICAS */
 [data-testid="stMetric"]{
     background:#F8FAFC;
-    border-left:5px solid #C8A951;
+    border-left:6px solid #C9A227;
     border:1px solid #E2E8F0;
     border-radius:18px;
     padding:18px;
