@@ -594,6 +594,9 @@ st.sidebar.markdown("---")
 st.sidebar.metric("Variables disponibles", len(df.columns) - 1)
 st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
 
+with open("logo_cengob.png", "rb") as img_file:
+    logo_base64 = base64.b64encode(img_file.read()).decode()
+
 # =========================
 # HEADER
 # =========================
@@ -603,7 +606,7 @@ col1, col2 = st.columns([1.2, 5])
 with col1:
 
     st.markdown(
-        """
+        f"""
         <div style="
             background:white;
             border-radius:22px;
@@ -619,16 +622,14 @@ with col1:
             margin-top:10px;
         ">
 
-            <img src="data:image/png;base64,{}"
+            <img src="data:image/png;base64,{logo_base64}"
                  style="
                     width:170px;
                     object-fit:contain;
                  ">
 
         </div>
-        """.format(
-            base64.b64encode(open("logo_cengob.png", "rb").read()).decode()
-        ),
+        """,
         unsafe_allow_html=True
     )
 
