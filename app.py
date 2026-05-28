@@ -384,53 +384,66 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         title=titulo,
         height=430,
         template="plotly_white",
-        paper_bgcolor="#243447",
-        plot_bgcolor="#243447",
-        font=dict(color="#E5E7EB"),
+    
+        paper_bgcolor="#DCEAF7",
+        plot_bgcolor="#DCEAF7",
+    
+        font=dict(
+            color="#000000",
+            size=14
+        ),
+    
+        title_font=dict(
+            color="#000000",
+            size=20
+        ),
+    
         margin=dict(l=20, r=20, t=60, b=30),
         xaxis_title="",
         yaxis_title=unidad,
         hovermode="x unified",
-
+    
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="right",
-            x=1
+            x=1,
+            font=dict(color="#000000", size=13)
         ),
-
+    
         xaxis=dict(
             rangeselector=dict(
-                bgcolor="#1F2937",
+                bgcolor="#FFFFFF",
                 activecolor="#0B3B36",
-
-                font=dict(
-                    color="#FFFFFF",
-                    size=13
-                ),
-
+                font=dict(color="#000000", size=13),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
                     dict(count=10, label="10A", step="year", stepmode="backward"),
-                    dict(step="all")
+                    dict(step="all", label="all")
                 ])
             ),
-
-            rangeslider=dict(visible=True),
-            type="date"
+            rangeslider=dict(
+                visible=True,
+                bgcolor="#CFE3F5",
+                bordercolor="#94A3B8"
+            ),
+            type="date",
+            tickfont=dict(color="#000000"),
+            gridcolor="rgba(0,0,0,0.08)"
+        ),
+    
+        yaxis=dict(
+            tickfont=dict(color="#000000"),
+            gridcolor="rgba(0,0,0,0.12)",
+            zerolinecolor="rgba(0,0,0,0.25)"
         )
-    )
-
-    fig.update_xaxes(
-        showgrid=False,
-        tickfont=dict(color="#D1D5DB")
     )
     
     fig.update_yaxes(
-        gridcolor="rgba(255,255,255,0.15)",
-        tickfont=dict(color="#D1D5DB")
+        gridcolor="rgba(0,0,0,0.12)",
+        tickfont=dict(color="#000000")
     )
 
     st.plotly_chart(
