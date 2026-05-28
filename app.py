@@ -202,66 +202,69 @@ def grafico_linea(df, col, titulo, unidad=""):
     )
 )
 
-        fig.update_layout(
-            title=titulo,
-            height=430,
-            template="plotly_dark",
-        
-            paper_bgcolor="#111827",
-            plot_bgcolor="#111827",
-        
-            font=dict(
-                color="#E5E7EB",
-                size=14
-            ),
-        
-            title_font=dict(
-                color="#F9FAFB",
-                size=22
-            ),
-        
-            margin=dict(l=20, r=20, t=60, b=30),
-        
-            xaxis_title="",
-            yaxis_title=unidad,
-        
-            xaxis=dict(
-                rangeselector=dict(
-                    bgcolor="#1F2937",
-                    activecolor="#0B3B36",
-        
-                    font=dict(
-                        color="#F9FAFB",
-                        size=13
-                    ),
-        
-                    buttons=list([
-                        dict(count=1, label="1A", step="year", stepmode="backward"),
-                        dict(count=5, label="5A", step="year", stepmode="backward"),
-                        dict(count=10, label="10A", step="year", stepmode="backward"),
-                        dict(step="all")
-                    ])
+    fig.update_layout(
+        title=titulo,
+        height=430,
+        template="plotly_dark",
+    
+        paper_bgcolor="#111827",
+        plot_bgcolor="#111827",
+    
+        font=dict(
+            color="#E5E7EB",
+            size=14
+        ),
+    
+        title_font=dict(
+            color="#F9FAFB",
+            size=22
+        ),
+    
+        margin=dict(l=20, r=20, t=60, b=30),
+    
+        xaxis_title="",
+        yaxis_title=unidad,
+    
+        xaxis=dict(
+            rangeselector=dict(
+                bgcolor="#1F2937",
+                activecolor="#0B3B36",
+    
+                font=dict(
+                    color="#F9FAFB",
+                    size=13
                 ),
-        
-                rangeslider=dict(
-                    visible=True,
-                    bgcolor="#111827"
-                ),
-        
-                type="date",
-        
-                tickfont=dict(
-                    color="#D1D5DB"
-                )
+    
+                buttons=list([
+                    dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=5, label="5A", step="year", stepmode="backward"),
+                    dict(count=10, label="10A", step="year", stepmode="backward"),
+                    dict(step="all")
+                ])
             ),
-        
-            yaxis=dict(
-                gridcolor="#374151",
-                tickfont=dict(
-                    color="#D1D5DB"
-                )
+    
+            rangeslider=dict(
+                visible=True,
+                bgcolor="#111827"
+            ),
+    
+            type="date",
+    
+            tickfont=dict(
+                color="#D1D5DB"
+            )
+        ),
+    
+        yaxis=dict(
+            gridcolor="#374151",
+            tickfont=dict(
+                color="#D1D5DB"
             )
         )
+    )
+
+
+    
     fig.update_traces(line=dict(width=3.5))
     fig.update_xaxes(showgrid=False)
     fig.update_yaxes(gridcolor="#D1D5DB")
