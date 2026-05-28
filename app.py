@@ -605,33 +605,28 @@ col1, col2 = st.columns([1.2, 5])
 
 with col1:
 
-    st.markdown(
-        f"""
-        <div style="
-            background:white;
-            border-radius:22px;
-            box-shadow:0 4px 14px rgba(0,0,0,0.08);
-
-            height:200px;
-
-            display:flex;
-            justify-content:center;
-            align-items:center;
-
-            padding:20px;
-            margin-top:10px;
-        ">
-
-            <img src="data:image/png;base64,{logo_base64}"
-                 style="
-                    width:170px;
-                    object-fit:contain;
-                 ">
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.html(f"""
+    <div style="
+        background:#FFFFFF;
+        border-radius:22px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.08);
+        height:200px;
+        width:100%;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        padding:20px;
+        margin-top:10px;
+    ">
+        <img src="data:image/png;base64,{logo_base64}"
+             style="
+                width:170px;
+                max-width:90%;
+                height:auto;
+                object-fit:contain;
+             ">
+    </div>
+    """)
 
 with col2:
     st.markdown("""
@@ -645,7 +640,7 @@ with col2:
     </h1>
 
     <h2 style="
-        color:#E5E7EB;
+        color:#0B3B36;
         margin-top:10px;
         font-size: clamp(18px, 3vw, 28px);
         font-weight:600;
