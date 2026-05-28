@@ -601,19 +601,20 @@ col1, col2 = st.columns([1.2, 5])
 
 with col1:
 
-    st.markdown(
-        """
-        <div style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            height:220px;
-        ">
-        """,
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div style="
+        background:white;
+        padding:18px;
+        border-radius:20px;
+        box-shadow:0 4px 14px rgba(0,0,0,0.08);
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:200px;
+    ">
+    """, unsafe_allow_html=True)
 
-    st.image("logo_cengob.png", width=190)
+    st.image("logo_cengob.png", width=180)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
