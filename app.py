@@ -214,8 +214,8 @@ def grafico_linea(df, col, titulo, unidad=""):
         height=430,
         template="plotly_dark",
     
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
+        paper_bgcolor="#243447",
+        plot_bgcolor="#243447",
     
         font=dict(
             color="#E5E7EB",
@@ -223,7 +223,7 @@ def grafico_linea(df, col, titulo, unidad=""):
         ),
     
         title_font=dict(
-            color="#F9FAFB",
+            color="#CBD5E1",
             size=22
         ),
     
@@ -263,7 +263,7 @@ def grafico_linea(df, col, titulo, unidad=""):
         ),
     
         yaxis=dict(
-            gridcolor="#374151",
+            gridcolor="rgba(255,255,255,0.15)",
             tickfont=dict(
                 color="#D1D5DB"
             )
@@ -354,8 +354,8 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         title=titulo,
         height=430,
         template="plotly_white",
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
+        paper_bgcolor="#243447",
+        plot_bgcolor="#243447",
         font=dict(color="#E5E7EB"),
         margin=dict(l=20, r=20, t=60, b=30),
         xaxis_title="",
@@ -399,7 +399,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     )
     
     fig.update_yaxes(
-        gridcolor="#374151",
+        gridcolor="rgba(255,255,255,0.15)",
         tickfont=dict(color="#D1D5DB")
     )
 
@@ -443,8 +443,8 @@ def grafico_barras(df, cols, titulo):
 
     fig.update_layout(
         height=430,
-        paper_bgcolor="#111827",
-        plot_bgcolor="#111827",
+        paper_bgcolor="#243447",
+        plot_bgcolor="#243447",
         font=dict(color="#E5E7EB"),
         margin=dict(l=20, r=20, t=60, b=80),
         xaxis_title="",
