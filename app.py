@@ -14,7 +14,6 @@ st.set_page_config(
 EXCEL_FILE = "Info.xlsx"
 SHEET_NAME = "data"
 
-
 # =========================
 #    TEMA AUTOMÁTICO
 # ========================= 
