@@ -99,7 +99,7 @@ p,label{
 # =========================
 # CARGA DE DATOS
 # =========================
-@st.cache_data
+@st.cache_data(ttl=60)
 def cargar_datos():
     raw = pd.read_excel(EXCEL_FILE, sheet_name=SHEET_NAME, header=None)
 
