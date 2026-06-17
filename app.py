@@ -434,7 +434,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         excedente_encaje_me: "Liquidez EIF en ME",
         consumo_hogares: "Consumo hogares",
         consumo_publico: "Consumo público",
-        formacion_capital: "Formación bruta de capital",
+        formacion_capital: "FBKF",
         expo_bienes_servicios: "Exportaciones",
         impo_bienes_servicios: "Importaciones",
         ingresos_totales_spnf: "Ingresos totales",
