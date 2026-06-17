@@ -1589,35 +1589,6 @@ st.markdown("---")
 # KPIs PRINCIPALES
 # =========================
 
-c1, c2, c3, c4 = st.columns(4)
-
-with c1:
-    kpi(df, "Actividad económica - IGAE", igae, "")
-
-with c2:
-    kpi(df, "Inflación interanual", inflacion_12m, "%")
-
-with c3:
-    kpi(df, "RIN", rin, "MM $us")
-
-with c4:
-    kpi(df, "Tipo de cambio venta", tc_venta, "Bs/$us")
-
-c5, c6, c7, c8 = st.columns(4)
-
-with c5:
-    kpi(df, "Base monetaria", base_monetaria, "MM Bs")
-
-with c6:
-    kpi(df, "Crédito privado", credito_privado, "MM $us")
-
-with c7:
-    kpi(df, "Depósitos", depositos, "MM Bs")
-
-with c8:
-    kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
-
-st.markdown("---")
 
 titulo_precios, mensaje_precios, nivel_precios = alerta_precios(df)
 titulo_externo, mensaje_externo, nivel_externo = alerta_externo(df)
