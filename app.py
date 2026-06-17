@@ -1524,7 +1524,7 @@ with tab1:
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        kpi(df, "Actividad económica - IGAE", igae, "")
+        kpi(df, "PIB a precios de mercado", pib_pm, "")
 
     with c2:
         kpi(df, "Inflación interanual", inflacion_12m, "%")
@@ -1560,7 +1560,7 @@ with tab1:
     c9, c10, c11, c12 = st.columns(4)
 
     with c9:
-        kpi(df, "PIB a precios de mercado", pib_pm, "%")
+        kpi(df, "Tasa premio reporto MN", tasa_reporto_mn, "%")
 
     with c10:
         kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
