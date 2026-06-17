@@ -1590,7 +1590,7 @@ with c5:
     kpi(df, "Base monetaria", base_monetaria, "MM Bs")
 
 with c6:
-    kpi(df, "Crédito privado", credito_privado, "MM Bs")
+    kpi(df, "Crédito privado", credito_privado, "MM $us")
 
 with c7:
     kpi(df, "Depósitos", depositos, "MM Bs")
@@ -1671,10 +1671,10 @@ with tab1:
         kpi(df, "Base monetaria", base_monetaria, "MM Bs")
 
     with c6:
-        kpi(df, "Crédito privado", credito_privado, "MM Bs")
+        kpi(df, "Crédito privado", credito_privado, "MM $us")
 
     with c7:
-        kpi(df, "Depósitos", depositos, "MM Bs")
+        kpi(df, "Depósitos", depositos, "MM $us")
 
     with c8:
         kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
@@ -1922,10 +1922,10 @@ with tab5:
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        kpi(df, "Crédito privado", credito_privado, "MM Bs")
+        kpi(df, "Crédito privado", credito_privado, "MM $us")
 
     with c2:
-        kpi(df, "Depósitos", depositos, "MM Bs")
+        kpi(df, "Depósitos", depositos, "MM $us")
 
     with c3:
         kpi(df, "Bolivianización depósitos", bol_dep, "%", tipo="ultimo", delta_tipo="pp")
@@ -1936,13 +1936,13 @@ with tab5:
     c5, c6, c7 = st.columns(3)
 
     with c5:
-        kpi(df, "Encaje constituido", encaje_constituido, "MM Bs")
+        kpi(df, "Encaje constituido", encaje_constituido, "MM $us")
 
     with c6:
-        kpi(df, "Excedente encaje efectivo", excedente_encaje_efectivo, "MM Bs")
+        kpi(df, "Excedente encaje efectivo", excedente_encaje_efectivo, "MM $us")
 
     with c7:
-        kpi(df, "Excedente encaje ME", excedente_encaje_me, "MM Bs")
+        kpi(df, "Excedente encaje ME", excedente_encaje_me, "MM $us")
 
     st.markdown("---")
 
@@ -1957,7 +1957,7 @@ with tab5:
             df,
             encaje_constituido,
             "Encaje constituido por el sistema financiero",
-            "Millones"
+            "Millones de $us"
         )
 
     with b:
@@ -1968,7 +1968,7 @@ with tab5:
                 excedente_encaje_me
             ],
             "Liquidez del sistema financiero: excedente de encaje en el BCB",
-            "Millones"
+            "Millones de $us"
         )
 
     st.markdown("---")
@@ -1984,7 +1984,7 @@ with tab5:
             df,
             [credito_privado, depositos],
             "Crédito y depósitos del sistema financiero",
-            "Millones de Bs"
+            "Millones de $us"
         )
 
     with d:
