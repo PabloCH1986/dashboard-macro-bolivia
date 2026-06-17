@@ -3,10 +3,12 @@ import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 import uuid
 import base64
 import os
 import unicodedata
+
 
 # =========================
 # CONFIGURACIÓN GENERAL
@@ -572,6 +574,241 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         key=f"multi_{titulo}_{uuid.uuid4()}"
     )
 
+def grafico_doble_eje(
+    df,
+    col_izq,
+    col_der,
+    titulo,
+    nombre_izq,
+    nombre_der,
+    titulo_eje_izq="Eje izquierdo",
+    titulo_eje_der="Eje derecho",
+    unidad_izq="",
+    unidad_der="",
+    color_izq="#0B3B36",
+    color_der="#C9A227",
+    sombra_izq=True,
+    sombra_der=False
+):
+    """
+    Gráfico general de doble eje.
+    
+    col_izq: columna que irá en el eje izquierdo.
+    col_der: columna que irá en el eje derecho.
+    nombre_izq: nombre visible de la serie izquierda.
+    nombre_der: nombre visible de la serie derecha.
+    titulo_eje_izq: título del eje Y izquierdo.
+    titulo_eje_der: título del eje Y derecho.
+    unidad_izq: unidad para hover del eje izquierdo.
+    unidad_der: unidad para hover del eje derecho.
+    """
+
+    if col_izq is None and col_der is None:
+        st.warning(f"No se encontraron variables para: {titulo}")
+        return
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+
+    # =====================
+    # SERIE EJE IZQUIERDO
+    # =====================
+    if col_izq is not None and col_izq in df.columns:
+
+        s_izq = df[["fecha", col_izq]].dropna().sort_values("fecha")
+
+        if not s_izq.empty:
+
+            fig.add_trace(
+                go.Scatter(
+                    x=s_izq["fecha"],
+                    y=s_izq[col_izq],
+                    mode="lines+markers",
+                    name=nombre_izq,
+                    line=dict(
+                        width=3.5,
+                        color=color_izq
+                    ),
+                    marker=dict(
+                        size=6,
+                        color=color_izq,
+                        line=dict(
+                            width=1,
+                            color="#FFFFFF"
+                        )
+                    ),
+                    fill="tozeroy" if sombra_izq else None,
+                    fillcolor="rgba(11,59,54,0.13)" if sombra_izq else None,
+                    hovertemplate=(
+                        "%{x|%d/%m/%Y}<br>"
+                        + nombre_izq
+                        + ": %{y:,.2f} "
+                        + unidad_izq
+                        + "<extra></extra>"
+                    )
+                ),
+                secondary_y=False
+            )
+
+    # =====================
+    # SERIE EJE DERECHO
+    # =====================
+    if col_der is not None and col_der in df.columns:
+
+        s_der = df[["fecha", col_der]].dropna().sort_values("fecha")
+
+        if not s_der.empty:
+
+            fig.add_trace(
+                go.Scatter(
+                    x=s_der["fecha"],
+                    y=s_der[col_der],
+                    mode="lines+markers",
+                    name=nombre_der,
+                    line=dict(
+                        width=3.5,
+                        color=color_der
+                    ),
+                    marker=dict(
+                        size=6,
+                        color=color_der,
+                        line=dict(
+                            width=1,
+                            color="#FFFFFF"
+                        )
+                    ),
+                    fill="tozeroy" if sombra_der else None,
+                    fillcolor="rgba(201,162,39,0.13)" if sombra_der else None,
+                    hovertemplate=(
+                        "%{x|%d/%m/%Y}<br>"
+                        + nombre_der
+                        + ": %{y:,.2f} "
+                        + unidad_der
+                        + "<extra></extra>"
+                    )
+                ),
+                secondary_y=True
+            )
+
+    # =====================
+    # FORMATO GENERAL
+    # =====================
+    fig.update_layout(
+        title=titulo,
+        height=480,
+        template="plotly_white",
+
+        paper_bgcolor="#EEF2F5",
+        plot_bgcolor="#EEF2F5",
+
+        font=dict(
+            color="#000000",
+            size=14
+        ),
+
+        title_font=dict(
+            color="#0B3B36",
+            size=22
+        ),
+
+        margin=dict(
+            l=25,
+            r=25,
+            t=70,
+            b=25
+        ),
+
+        hovermode="x unified",
+
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.03,
+            xanchor="right",
+            x=1,
+            font=dict(
+                color="#000000",
+                size=13
+            )
+        ),
+
+        xaxis=dict(
+            type="date",
+
+            rangeselector=dict(
+                bgcolor="#FFFFFF",
+                activecolor="#C9A227",
+                bordercolor="#0B3B36",
+                borderwidth=1,
+                font=dict(
+                    color="#0B3B36",
+                    size=12
+                ),
+                buttons=list([
+                    dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=3, label="3A", step="year", stepmode="backward"),
+                    dict(count=5, label="5A", step="year", stepmode="backward"),
+                    dict(count=10, label="10A", step="year", stepmode="backward"),
+                    dict(step="all", label="Todo")
+                ])
+            ),
+
+            rangeslider=dict(
+                visible=True,
+                bgcolor="#E6D7A2",
+                bordercolor="#0B3B36",
+                borderwidth=2,
+                thickness=0.12
+            ),
+
+            tickfont=dict(
+                color="#000000",
+                size=12
+            ),
+
+            gridcolor="rgba(0,0,0,0.10)",
+            showgrid=True
+        )
+    )
+
+    # =====================
+    # EJE IZQUIERDO
+    # =====================
+    fig.update_yaxes(
+        title_text=titulo_eje_izq,
+        secondary_y=False,
+        tickfont=dict(
+            color=color_izq
+        ),
+        title_font=dict(
+            color=color_izq
+        ),
+        gridcolor="rgba(0,0,0,0.12)",
+        zeroline=True,
+        zerolinecolor="rgba(11,59,54,0.45)"
+    )
+
+    # =====================
+    # EJE DERECHO
+    # =====================
+    fig.update_yaxes(
+        title_text=titulo_eje_der,
+        secondary_y=True,
+        tickfont=dict(
+            color=color_der
+        ),
+        title_font=dict(
+            color=color_der
+        ),
+        gridcolor="rgba(0,0,0,0)"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"doble_eje_{titulo}_{uuid.uuid4()}"
+    )
+
+
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None and c in df.columns]
 
@@ -786,8 +1023,31 @@ tc_oficial = buscar_columna("Tipo de cambio oficial")
 if tc_oficial is None:
     tc_oficial = buscar_columna("Tipo de cambio de venta")
 
-exportaciones = buscar_columna("Exportaciones")
-importaciones = buscar_columna("Importaciones")
+exportaciones_valor = buscar_columna_multiple([
+    "Exportaciones (En millones de dólares)",
+    "Exportaciones en millones de dólares",
+    "Exportaciones"
+])
+
+exportaciones_peso = buscar_columna_multiple([
+    "Exportaciones (Peso neto en toneladas)",
+    "Exportaciones Peso neto en toneladas",
+    "Peso neto en toneladas"
+])
+
+importaciones_valor = buscar_columna_multiple([
+    "Importaciones (Valor CIF en millones dólares)",
+    "Importaciones Valor CIF en millones dólares",
+    "Importaciones en millones dólares",
+    "Importaciones"
+])
+
+importaciones_peso = buscar_columna_multiple([
+    "Importaciones (Peso Bruto en Toneladas)",
+    "Importaciones Peso Bruto en Toneladas",
+    "Peso Bruto en Toneladas"
+])
+
 saldo_comercial = buscar_columna("Saldo Comercial")
 divisas = buscar_columna("Divisas")
 oro = buscar_columna("Oro")
@@ -1257,10 +1517,10 @@ with tab3:
         kpi(df, "Tipo de cambio referencial", tc_venta, "Bs/$us")
 
     with c3:
-        kpi(df, "Exportaciones", exportaciones, "MM $us")
+        kpi(df, "Exportaciones", exportaciones_valor, "MM $us")
 
     with c4:
-        kpi(df, "Importaciones", importaciones, "MM $us")
+        kpi(df, "Importaciones", importaciones_valor, "MM $us")
 
     c5, c6, c7, c8 = st.columns(4)
 
@@ -1291,13 +1551,35 @@ with tab3:
             "Bs/$us"
         )
 
-    c, d = st.columns(2)
+c, d = st.columns(2)
 
-    with c:
-        grafico_linea(df, exportaciones, "Exportaciones", "MM $us")
+with c:
+    grafico_doble_eje(
+        df=df,
+        col_izq=exportaciones_peso,
+        col_der=exportaciones_valor,
+        titulo="Exportaciones: valor y peso neto",
+        nombre_izq="Peso neto",
+        nombre_der="Valor exportado",
+        titulo_eje_izq="Peso neto en toneladas",
+        titulo_eje_der="Millones de dólares",
+        unidad_izq="toneladas",
+        unidad_der="MM $us"
+    )
 
-    with d:
-        grafico_linea(df, importaciones, "Importaciones", "MM $us")
+with d:
+    grafico_doble_eje(
+        df=df,
+        col_izq=importaciones_peso,
+        col_der=importaciones_valor,
+        titulo="Importaciones: valor CIF y peso bruto",
+        nombre_izq="Peso bruto",
+        nombre_der="Valor CIF",
+        titulo_eje_izq="Peso bruto en toneladas",
+        titulo_eje_der="Millones de dólares",
+        unidad_izq="toneladas",
+        unidad_der="MM $us"
+    )
 
 # =========================
 # TAB 4: MONETARIO
