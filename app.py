@@ -273,8 +273,21 @@ def formato_numero(x):
 
     texto = f"{x:,.2f}"
 
-    # Cambia formato inglés a formato español:
+    # Formato español/boliviano:
     # 36,114.29 -> 36.114,29
+    texto = texto.replace(",", "X").replace(".", ",").replace("X", ".")
+
+    return texto
+
+
+def formato_numero_1d(x):
+    if x is None or pd.isna(x):
+        return "Sin dato"
+
+    texto = f"{x:,.1f}"
+
+    # Formato español/boliviano:
+    # 12.5 -> 12,5
     texto = texto.replace(",", "X").replace(".", ",").replace("X", ".")
 
     return texto
