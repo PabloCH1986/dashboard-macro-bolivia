@@ -136,6 +136,125 @@ df_original = cargar_datos()
 # =========================
 # FUNCIONES
 # =========================
+
+
+
+# =========================
+# LECTURA AUTOMÁTICA POR SECTOR
+# =========================
+
+def alerta_precios(df):
+    infl_val, _ = ultimo_valor(df, inflacion_12m)
+
+    if infl_val is None:
+        return "Alerta de precios", "No se cuenta con dato suficiente de inflación interanual.", "info"
+
+    if infl_val >= 6:
+        return "Alerta de precios", "La inflación interanual se encuentra en zona de presión. Conviene monitorear alimentos, transporte y expectativas.", "danger"
+    elif infl_val >= 3:
+        return "Alerta de precios", "La inflación se mantiene en rango de vigilancia. Se recomienda seguimiento preventivo.", "warning"
+    else:
+        return "Alerta de precios", "La inflación se encuentra en un rango relativamente contenido.", "ok"
+
+
+def alerta_externo(df):
+    rin_val, _ = ultimo_valor(df, rin)
+
+    if rin_val is None:
+        return "Alerta externa", "No se cuenta con dato suficiente de reservas internacionales.", "info"
+
+    if rin_val < 2000:
+        return "Alerta externa", "Las reservas internacionales se encuentran en zona crítica. Existe riesgo de presión cambiaria y restricción externa.", "danger"
+    elif rin_val < 5000:
+        return "Alerta externa", "Las reservas internacionales están en zona de vigilancia. Se recomienda monitorear divisas, oro y balanza comercial.", "warning"
+    else:
+        return "Alerta externa", "La posición externa muestra un nivel relativamente adecuado de reservas.", "ok"
+
+
+def alerta_monetario(df):
+    bm_yoy = variacion_interanual(df, base_monetaria)
+
+    if bm_yoy is None:
+        return "Alerta monetaria", "No se cuenta con información suficiente para calcular la variación interanual de la base monetaria.", "info"
+
+    if bm_yoy >= 15:
+        return "Alerta monetaria", "La base monetaria muestra una expansión elevada. Puede generar presión sobre precios, liquidez y expectativas.", "warning"
+    elif bm_yoy < 0:
+        return "Alerta monetaria", "La base monetaria presenta contracción, lo que puede reflejar menor liquidez en la economía.", "warning"
+    else:
+        return "Alerta monetaria", "La dinámica monetaria se mantiene en un rango de seguimiento regular.", "ok"
+
+
+def alerta_financiero(df):
+    cred_yoy = variacion_interanual(df, credito_privado)
+    dep_yoy = variacion_interanual(df, depositos)
+
+    if cred_yoy is None and dep_yoy is None:
+        return "Alerta financiera", "No se cuenta con información suficiente de crédito y depósitos.", "info"
+
+    if cred_yoy is not None and dep_yoy is not None and cred_yoy > dep_yoy + 5:
+        return "Alerta financiera", "El crédito crece por encima de los depósitos. Conviene monitorear liquidez, fondeo y calidad de cartera.", "warning"
+    elif dep_yoy is not None and dep_yoy < 0:
+        return "Alerta financiera", "Los depósitos muestran contracción interanual. Puede existir presión de liquidez en el sistema financiero.", "danger"
+    else:
+        return "Alerta financiera", "El sistema financiero muestra una dinámica relativamente estable entre crédito y depósitos.", "ok"
+
+
+def alerta_real(df):
+    pib_yoy = variacion_interanual(df, pib_pm)
+    consumo_yoy = variacion_interanual(df, consumo_hogares)
+    inversion_yoy = variacion_interanual(df, formacion_capital)
+
+    if pib_yoy is None:
+        return "Alerta sector real", "No se cuenta con información suficiente para calcular el crecimiento interanual del PIB.", "info"
+
+    if pib_yoy < 0:
+        return "Alerta sector real", "El PIB muestra contracción interanual. Se recomienda revisar consumo, inversión y sector externo real.", "danger"
+    elif inversion_yoy is not None and inversion_yoy < 0:
+        return "Alerta sector real", "El PIB crece, pero la formación bruta de capital muestra debilidad. Existe riesgo sobre el crecimiento futuro.", "warning"
+    elif consumo_yoy is not None and consumo_yoy < 0:
+        return "Alerta sector real", "El consumo de hogares muestra deterioro. Puede reflejar menor dinamismo de la demanda interna.", "warning"
+    else:
+        return "Alerta sector real", "La actividad real mantiene una trayectoria positiva según los últimos datos disponibles.", "ok"
+
+
+def alerta_fiscal(df):
+    resultado_global, _ = ultimo_valor(df, resultado_global_spnf)
+    ingresos_yoy = variacion_interanual(df, ingresos_totales_spnf)
+    egresos_yoy = variacion_interanual(df, egresos_totales_spnf)
+
+    if resultado_global is None:
+        return "Alerta fiscal", "No se cuenta con dato suficiente del resultado fiscal global del SPNF.", "info"
+
+    if resultado_global < 0 and egresos_yoy is not None and ingresos_yoy is not None and egresos_yoy > ingresos_yoy:
+        return "Alerta fiscal", "El resultado fiscal global es deficitario y los egresos crecen por encima de los ingresos. Riesgo fiscal elevado.", "danger"
+    elif resultado_global < 0:
+        return "Alerta fiscal", "El SPNF registra déficit global. Se recomienda monitorear ingresos, gasto corriente y gasto de capital.", "warning"
+    else:
+        return "Alerta fiscal", "El resultado fiscal global se mantiene en terreno positivo o sin señales críticas inmediatas.", "ok"
+
+
+def alerta_social(df):
+    pobreza_val, _ = ultimo_valor(df, pobreza_bolivia)
+    desocupacion_val, _ = ultimo_valor(df, desocupacion_nacional)
+    gini_val, _ = ultimo_valor(df, gini_bolivia)
+
+    if pobreza_val is None and desocupacion_val is None and gini_val is None:
+        return "Alerta social", "No se cuenta con información suficiente de pobreza, desigualdad o desocupación.", "info"
+
+    if pobreza_val is not None and pobreza_val >= 35:
+        return "Alerta social", "La incidencia de pobreza se mantiene elevada. Riesgo social alto sobre ingresos, empleo y bienestar.", "danger"
+    elif desocupacion_val is not None and desocupacion_val >= 8:
+        return "Alerta social", "La tasa de desocupación nacional se encuentra en zona de alerta. Conviene monitorear empleo e ingresos laborales.", "warning"
+    elif gini_val is not None and gini_val >= 0.45:
+        return "Alerta social", "El índice de GINI muestra una desigualdad relevante. Se recomienda seguimiento distributivo.", "warning"
+    else:
+        return "Alerta social", "Los indicadores sociales no muestran una señal crítica inmediata según los últimos datos disponibles.", "ok"
+
+
+
+
+
 def buscar_columna(texto):
     texto = texto.lower()
     for col in df_original.columns:
@@ -336,6 +455,70 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
     fig = go.Figure()
 
+# =========================
+# ALERTAS POR SECTOR
+# =========================
+
+def alerta_sector(titulo, mensaje, nivel="info"):
+    iconos = {
+        "info": "ℹ️",
+        "ok": "✅",
+        "warning": "⚠️",
+        "danger": "🚨"
+    }
+
+    colores = {
+        "info": "#DCEAF7",
+        "ok": "#DCFCE7",
+        "warning": "#FEF3C7",
+        "danger": "#FEE2E2"
+    }
+
+    bordes = {
+        "info": "#2563EB",
+        "ok": "#16A34A",
+        "warning": "#D97706",
+        "danger": "#DC2626"
+    }
+
+    texto = {
+        "info": "#0F172A",
+        "ok": "#14532D",
+        "warning": "#78350F",
+        "danger": "#7F1D1D"
+    }
+
+    st.markdown(f"""
+    <div style="
+        background:{colores.get(nivel, '#DCEAF7')};
+        border-left:7px solid {bordes.get(nivel, '#2563EB')};
+        border-radius:16px;
+        padding:16px 20px;
+        margin:10px 0 22px 0;
+        box-shadow:0 3px 10px rgba(0,0,0,0.05);
+    ">
+        <div style="
+            font-size:18px;
+            font-weight:800;
+            color:{texto.get(nivel, '#0F172A')};
+            margin-bottom:6px;
+        ">
+            {iconos.get(nivel, 'ℹ️')} {titulo}
+        </div>
+        <div style="
+            font-size:15px;
+            color:{texto.get(nivel, '#0F172A')};
+            line-height:1.5;
+        ">
+            {mensaje}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+
+
+    
     # =====================
     # COLORES CENGOB
     # =====================
@@ -348,6 +531,8 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         "#475569"   # gris
     ]
 
+
+   
     # =====================
     # NOMBRES CORTOS
     # =====================
@@ -545,6 +730,7 @@ def semaforo(nombre, valor, bajo, medio, invertido=False):
 # SECTOR REAL
 # =========================
 
+igae = buscar_columna("IGAE")
 pib_pm = buscar_columna("PIB a precios de mercado")
 consumo_publico = buscar_columna("Gasto de consumo final de la administración pública")
 consumo_hogares = buscar_columna("Gasto de consumo final de los hogares")
@@ -752,6 +938,7 @@ st.info(
 # ========================================================================================================================================================================================================
 # TABS
 # ========================================================================================================================================================================================================
+
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "📈 Resumen",
     "🔥 Inflación",
@@ -764,19 +951,27 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "⚠️ Riesgos"
 ])
 
+
+# =========================
+# TAB 1: RESUMEN
+# =========================
+
 with tab1:
+    titulo, mensaje, nivel = alerta_real(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     a, b = st.columns(2)
 
     with a:
         grafico_linea(df, igae, "IGAE - Actividad económica")
 
     with b:
-        grafico_linea(df, inflacion_12m, "Inflación interanual")
+        grafico_linea(df, inflacion_12m, "Inflación interanual", "%")
 
     c, d = st.columns(2)
 
     with c:
-        grafico_linea(df, rin, "Reservas internacionales netas")
+        grafico_linea(df, rin, "Reservas internacionales netas", "MM $us")
 
     with d:
         grafico_lineas_multiples(
@@ -786,8 +981,17 @@ with tab1:
             "Millones de Bs"
         )
 
+
+# =========================
+# TAB 2: INFLACIÓN
+# =========================
+
 with tab2:
+    titulo, mensaje, nivel = alerta_precios(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
+
     st.markdown("### Indicadores complementarios de inflación")
 
     i1, i2 = st.columns(2)
@@ -799,11 +1003,18 @@ with tab2:
         grafico_linea(df, inflacion_acumulada, "Variación acumulada en el año", "%")
 
 
+# =========================
+# TAB 3: SECTOR EXTERNO
+# =========================
+
 with tab3:
+    titulo, mensaje, nivel = alerta_externo(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     a, b = st.columns(2)
 
     with a:
-        grafico_linea(df, rin, "Reservas internacionales netas")
+        grafico_linea(df, rin, "Reservas internacionales netas", "MM $us")
 
     with b:
         grafico_lineas_multiples(
@@ -816,17 +1027,24 @@ with tab3:
     c, d = st.columns(2)
 
     with c:
-        grafico_linea(df, exportaciones, "Exportaciones")
+        grafico_linea(df, exportaciones, "Exportaciones", "MM $us")
 
     with d:
-        grafico_linea(df, importaciones, "Importaciones")
+        grafico_linea(df, importaciones, "Importaciones", "MM $us")
 
+
+# =========================
+# TAB 4: MONETARIO
+# =========================
 
 with tab4:
+    titulo, mensaje, nivel = alerta_monetario(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     a, b = st.columns(2)
 
     with a:
-        grafico_linea(df, base_monetaria, "Base monetaria")
+        grafico_linea(df, base_monetaria, "Base monetaria", "Millones de Bs")
 
     with b:
         grafico_lineas_multiples(
@@ -837,7 +1055,14 @@ with tab4:
         )
 
 
+# =========================
+# TAB 5: FINANCIERO
+# =========================
+
 with tab5:
+    titulo, mensaje, nivel = alerta_financiero(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     a, b = st.columns(2)
 
     with a:
@@ -856,15 +1081,25 @@ with tab5:
             "%"
         )
 
+
+# =========================
+# TAB 6: SECTOR REAL
+# =========================
+
 with tab6:
     st.subheader("🏭 Sector real - PIB por enfoque del gasto")
+
+    titulo, mensaje, nivel = alerta_real(df)
+    alerta_sector(titulo, mensaje, nivel)
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
         kpi(df, "PIB a precios de mercado", pib_pm, "MM Bs")
+
     with c2:
         kpi(df, "Consumo de hogares", consumo_hogares, "MM Bs")
+
     with c3:
         kpi(df, "Formación bruta de capital", formacion_capital, "MM Bs")
 
@@ -872,8 +1107,10 @@ with tab6:
 
     with c4:
         kpi(df, "Consumo público", consumo_publico, "MM Bs")
+
     with c5:
         kpi(df, "Exportaciones", expo_bienes_servicios, "MM Bs")
+
     with c6:
         kpi(df, "Importaciones", impo_bienes_servicios, "MM Bs")
 
@@ -922,28 +1159,32 @@ with tab6:
         )
 
 
+# =========================
+# TAB 7: FISCAL
+# =========================
+
 with tab7:
     st.subheader("🏛️ Sector fiscal - Sector Público No Financiero")
 
-    # =========================
-    # KPIs FISCALES
-    # =========================
+    titulo, mensaje, nivel = alerta_fiscal(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
         kpi(df, "Ingresos Totales SPNF", ingresos_totales_spnf, "MM Bs")
+
     with c2:
         kpi(df, "Egresos Totales SPNF", egresos_totales_spnf, "MM Bs")
+
     with c3:
         kpi(df, "Resultado Corriente SPNF", resultado_corriente_spnf, "MM Bs")
+
     with c4:
         kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
 
     st.markdown("---")
 
-    # =========================
-    # INGRESOS Y EGRESOS TOTALES
-    # =========================
     a, b = st.columns(2)
 
     with a:
@@ -962,9 +1203,6 @@ with tab7:
             "Millones de Bs"
         )
 
-    # =========================
-    # COMPOSICIÓN DE INGRESOS
-    # =========================
     c, d = st.columns(2)
 
     with c:
@@ -989,9 +1227,6 @@ with tab7:
             "Millones de Bs"
         )
 
-    # =========================
-    # RESULTADO FISCAL
-    # =========================
     e, f = st.columns(2)
 
     with e:
@@ -1010,12 +1245,17 @@ with tab7:
             "Millones de Bs"
         )
 
+
+# =========================
+# TAB 8: SOCIAL
+# =========================
+
 with tab8:
     st.subheader("👥 Sector social")
 
-    # =========================
-    # KPIs SOCIALES
-    # =========================
+    titulo, mensaje, nivel = alerta_social(df)
+    alerta_sector(titulo, mensaje, nivel)
+
     c1, c2, c3 = st.columns(3)
 
     with c1:
@@ -1029,9 +1269,6 @@ with tab8:
 
     st.markdown("---")
 
-    # =========================
-    # GRÁFICOS SOCIALES
-    # =========================
     a, b = st.columns(2)
 
     with a:
@@ -1070,9 +1307,6 @@ with tab8:
             "Pobreza y desocupación nacional",
             "%"
         )
-
-
-
 
 
 
