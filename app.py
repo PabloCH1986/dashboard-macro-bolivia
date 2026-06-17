@@ -127,8 +127,49 @@ def cargar_datos():
     data.columns = nombres_unicos
     data = data.rename(columns={data.columns[0]: "fecha"})
 
+    # =========================
+    # CONVERSIÓN DE FECHA
+    # =========================
     data["fecha"] = pd.to_datetime(data["fecha"], errors="coerce")
     data = data.dropna(subset=["fecha"])
+
+    # Quita horas ocultas si existieran
+    data["fecha"] = data["fecha"].dt.normalize()
+
+    # =========================
+    # AJUSTE DE FECHAS
+    # =========================
+    # Regla:
+    # 1. Meses cerrados: último día del mes.
+    # 2. Último mes disponible incompleto: mantiene fecha real de corte.
+    #
+    # Ejemplo:
+    # 01/04/2026 -> 30/04/2026
+    # 01/05/2026 -> 31/05/2026
+    # 03/06/2026 -> 03/06/2026 si junio es el último mes disponible incompleto.
+
+    fecha_max = data["fecha"].max()
+    ultimo_mes_disponible = fecha_max.to_period("M")
+    fecha_max_fin_mes = fecha_max + pd.offsets.MonthEnd(0)
+
+    ultimo_mes_esta_cerrado = fecha_max == fecha_max_fin_mes
+
+    def ajustar_fecha_mensual(fecha):
+        if pd.isna(fecha):
+            return fecha
+
+        # Mantener la fecha real de corte solo para el último mes incompleto
+        if not ultimo_mes_esta_cerrado and fecha.to_period("M") == ultimo_mes_disponible:
+            return fecha
+
+        # Convertir meses cerrados al último día del mes
+        return fecha + pd.offsets.MonthEnd(0)
+
+    data["fecha"] = data["fecha"].apply(ajustar_fecha_mensual)
+
+    # =========================
+    # LIMPIEZA DE COLUMNAS
+    # =========================
     data = data.dropna(axis=1, how="all")
 
     for col in data.columns:
@@ -136,17 +177,6 @@ def cargar_datos():
             data[col] = pd.to_numeric(data[col], errors="coerce")
 
     return data
-
-
-try:
-    df_original = cargar_datos()
-except Exception as e:
-    st.error(
-        "No se pudo cargar la base de datos. Verifica que el archivo "
-        f"'{EXCEL_FILE}' exista y que la hoja se llame '{SHEET_NAME}'."
-    )
-    st.exception(e)
-    st.stop()
 
 # =========================
 # FUNCIONES BASE
@@ -861,6 +891,23 @@ def grafico_barras(df, cols, titulo):
     )
 
 
+def crear_serie_interanual(df, col, nombre_nueva_columna):
+    if col is None:
+        return df
+
+    if col not in df.columns:
+        return df
+
+    df = df.copy()
+    df = df.sort_values("fecha")
+
+    df[nombre_nueva_columna] = (
+        df[col].pct_change(periods=12) * 100
+    )
+
+    return df
+
+
 def alerta_sector(titulo, mensaje, nivel="info"):
     iconos = {
         "info": "ℹ️",
@@ -1087,6 +1134,7 @@ base_monetaria = buscar_columna("Base monetaria")
 m1 = buscar_columna("M’1")
 m2 = buscar_columna("M’2")
 m3 = buscar_columna("M’3")
+crec_base_monetaria = "Crecimiento interanual Base monetaria"
 
 titulos_bcb_usd = buscar_columna_multiple([
     "Saldo de Títulos del Banco Central de Bolivia (millones de $us)",
@@ -1273,6 +1321,12 @@ rango = st.sidebar.date_input(
 )
 
 df = df_original.copy()
+
+df = crear_serie_interanual(
+    df,
+    base_monetaria,
+    crec_base_monetaria
+)
 
 if len(rango) == 2:
     inicio = pd.to_datetime(rango[0])
@@ -1666,7 +1720,20 @@ with tab4:
     a, b = st.columns(2)
 
     with a:
-        grafico_linea(df, base_monetaria, "Base monetaria", "Millones de Bs")
+        grafico_doble_eje(
+            df=df,
+            col_izq=crec_base_monetaria,
+            col_der=base_monetaria,
+            titulo="Base monetaria y crecimiento interanual",
+            nombre_izq="Crecimiento interanual Base monetaria",
+            nombre_der="Base monetaria",
+            titulo_eje_izq="Crecimiento interanual (%)",
+            titulo_eje_der="Base monetaria (millones de Bs)",
+            unidad_izq="%",
+            unidad_der="MM Bs",
+            sombra_izq=False,
+            sombra_der=False
+        )
 
     with b:
         grafico_lineas_multiples(
