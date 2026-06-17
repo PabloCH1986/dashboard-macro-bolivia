@@ -538,23 +538,41 @@ def semaforo(nombre, valor, bajo, medio, invertido=False):
     </div>
     """, unsafe_allow_html=True)
 
+# =================================================================================================================================================================================================================
+# VARIABLES ECONOMICAS 
+# =================================================================================================================================================================================================================
 # =========================
-# VARIABLES
+# SECTOR REAL
 # =========================
-igae = buscar_columna("IGAE")
+
+pib_pm = buscar_columna("PIB a precios de mercado")
+consumo_publico = buscar_columna("Gasto de consumo final de la administración pública")
+consumo_hogares = buscar_columna("Gasto de consumo final de los hogares")
+formacion_capital = buscar_columna("Formación bruta de capital")
+expo_bienes_servicios = buscar_columna("Exportaciones de bienes y servicios")
+impo_bienes_servicios = buscar_columna("importaciones bienes y servicios")
+
+
+
+# =========================
+# SECTOR PRECIOS
+# =========================
+
 inflacion_12m = buscar_columna("Variación a doce meses")
 inflacion_mensual = buscar_columna("Variación mensual inflacion total")
 inflacion_acumulada = buscar_columna("Variación acumulada en el año")
+
+
+# =========================
+# SECTOR EXTERNO
+# =========================
+
+
 rin = buscar_columna("Reservas internacionales netas")
 tc_venta = buscar_columna("Valor referencial de venta")
 tc_oficial = buscar_columna("Tipo de cambio oficial")
 if tc_oficial is None:
     tc_oficial = buscar_columna("Tipo de cambio de venta")
-bol_dep = buscar_columna("Bolivianización Depósitos")
-bol_cred = buscar_columna("Bolivianización Créditos")
-base_monetaria = buscar_columna("Base monetaria")
-credito_privado = buscar_columna("Crédito del sistema financiero al sector privado")
-depositos = buscar_columna("Depósitos en entidades")
 exportaciones = buscar_columna("Exportaciones")
 importaciones = buscar_columna("Importaciones")
 saldo_comercial = buscar_columna("Saldo Comercial")
@@ -565,13 +583,55 @@ oro_ley = buscar_columna("d/c Oro según Ley N°1503")
 recursos_alta_liquidez = buscar_columna("Recursos de Alta Liquidez")
 oro_convertible = buscar_columna("Oro convertible en divisas")
 posicion_fmi = buscar_columna("Posición con el FMI")
+
+# =========================
+# SECTOR FINANCIERO
+# =========================
+
+credito_privado = buscar_columna("Crédito del sistema financiero al sector privado")
+depositos = buscar_columna("Depósitos en entidades")
+bol_dep = buscar_columna("Bolivianización Depósitos")
+bol_cred = buscar_columna("Bolivianización Créditos")
+
+
+# =========================
+# SECTOR MONETARIO
+# =========================
+
+
+base_monetaria = buscar_columna("Base monetaria")
 m1 = buscar_columna("M’1")
 m2 = buscar_columna("M’2")
 m3 = buscar_columna("M’3")
 
+
+
 # =========================
+# SECTOR FISCAL
+# =========================
+
+ingresos_totales_spnf = buscar_columna("Ingresos Totales SPNF")
+ingresos_corrientes_spnf = buscar_columna("Ingresos Corrientes del SPNF")
+ingresos_capital_spnf = buscar_columna("Ingresos de Capital del SPNF")
+
+egresos_totales_spnf = buscar_columna("Egresos Totales del SPNF")
+egresos_corrientes_spnf = buscar_columna("Egresos Corrientes del SPNF")
+egresos_capital_spnf = buscar_columna("Egresos de Capital del SPNF")
+
+resultado_corriente_spnf = buscar_columna("Resultado Fiscal Corriente del SPNF")
+resultado_global_spnf = buscar_columna("Resultado Fiscal Global del SPNF")
+
+# =========================
+# SECTOR SOCIAL
+# =========================
+
+pobreza_bolivia = buscar_columna("Bolivia: Indidencia de pobreza")
+gini_bolivia = buscar_columna("Bolivia: Índice de GINI")
+desocupacion_nacional = buscar_columna("Tasa de Desocupación Nacional")
+
+# =================================================================================================================================================================================================================
 # SIDEBAR
-# =========================
+# =================================================================================================================================================================================================================
 st.sidebar.title("⚙️ Panel de control")
 fecha_min = df_original["fecha"].min()
 fecha_max = df_original["fecha"].max()
@@ -689,15 +749,18 @@ st.info(
     "mientras las reservas internacionales continúan siendo el principal factor de riesgo externo."
 )
 
-# =========================
+# ========================================================================================================================================================================================================
 # TABS
-# =========================
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+# ========================================================================================================================================================================================================
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "📈 Resumen",
     "🔥 Inflación",
     "🌎 Sector externo",
     "💵 Monetario",
     "🏦 Financiero",
+    "🏭 Sector real",
+    "🏛️ Fiscal",
+    "👥 Social",
     "⚠️ Riesgos"
 ])
 
@@ -792,6 +855,230 @@ with tab5:
             "Bolivianización de depósitos y créditos",
             "%"
         )
+
+with tab6:
+    st.subheader("🏭 Sector real - PIB por enfoque del gasto")
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        kpi(df, "PIB a precios de mercado", pib_pm, "MM Bs")
+    with c2:
+        kpi(df, "Consumo de hogares", consumo_hogares, "MM Bs")
+    with c3:
+        kpi(df, "Formación bruta de capital", formacion_capital, "MM Bs")
+
+    c4, c5, c6 = st.columns(3)
+
+    with c4:
+        kpi(df, "Consumo público", consumo_publico, "MM Bs")
+    with c5:
+        kpi(df, "Exportaciones", expo_bienes_servicios, "MM Bs")
+    with c6:
+        kpi(df, "Importaciones", impo_bienes_servicios, "MM Bs")
+
+    st.markdown("---")
+
+    a, b = st.columns(2)
+
+    with a:
+        grafico_linea(
+            df,
+            pib_pm,
+            "PIB a precios de mercado",
+            "Millones de Bs"
+        )
+
+    with b:
+        grafico_lineas_multiples(
+            df,
+            [consumo_hogares, consumo_publico, formacion_capital],
+            "Demanda interna: consumo e inversión",
+            "Millones de Bs"
+        )
+
+    c, d = st.columns(2)
+
+    with c:
+        grafico_lineas_multiples(
+            df,
+            [expo_bienes_servicios, impo_bienes_servicios],
+            "Sector externo real: exportaciones e importaciones",
+            "Millones de Bs"
+        )
+
+    with d:
+        grafico_lineas_multiples(
+            df,
+            [
+                consumo_hogares,
+                consumo_publico,
+                formacion_capital,
+                expo_bienes_servicios,
+                impo_bienes_servicios
+            ],
+            "Componentes del PIB por gasto",
+            "Millones de Bs"
+        )
+
+
+with tab7:
+    st.subheader("🏛️ Sector fiscal - Sector Público No Financiero")
+
+    # =========================
+    # KPIs FISCALES
+    # =========================
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        kpi(df, "Ingresos Totales SPNF", ingresos_totales_spnf, "MM Bs")
+    with c2:
+        kpi(df, "Egresos Totales SPNF", egresos_totales_spnf, "MM Bs")
+    with c3:
+        kpi(df, "Resultado Corriente SPNF", resultado_corriente_spnf, "MM Bs")
+    with c4:
+        kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
+
+    st.markdown("---")
+
+    # =========================
+    # INGRESOS Y EGRESOS TOTALES
+    # =========================
+    a, b = st.columns(2)
+
+    with a:
+        grafico_lineas_multiples(
+            df,
+            [ingresos_totales_spnf, egresos_totales_spnf],
+            "Ingresos y egresos totales del SPNF",
+            "Millones de Bs"
+        )
+
+    with b:
+        grafico_lineas_multiples(
+            df,
+            [resultado_corriente_spnf, resultado_global_spnf],
+            "Resultado fiscal corriente y global del SPNF",
+            "Millones de Bs"
+        )
+
+    # =========================
+    # COMPOSICIÓN DE INGRESOS
+    # =========================
+    c, d = st.columns(2)
+
+    with c:
+        grafico_lineas_multiples(
+            df,
+            [
+                ingresos_corrientes_spnf,
+                ingresos_capital_spnf
+            ],
+            "Composición de ingresos del SPNF",
+            "Millones de Bs"
+        )
+
+    with d:
+        grafico_lineas_multiples(
+            df,
+            [
+                egresos_corrientes_spnf,
+                egresos_capital_spnf
+            ],
+            "Composición de egresos del SPNF",
+            "Millones de Bs"
+        )
+
+    # =========================
+    # RESULTADO FISCAL
+    # =========================
+    e, f = st.columns(2)
+
+    with e:
+        grafico_linea(
+            df,
+            resultado_corriente_spnf,
+            "Resultado Fiscal Corriente del SPNF",
+            "Millones de Bs"
+        )
+
+    with f:
+        grafico_linea(
+            df,
+            resultado_global_spnf,
+            "Resultado Fiscal Global del SPNF",
+            "Millones de Bs"
+        )
+
+with tab8:
+    st.subheader("👥 Sector social")
+
+    # =========================
+    # KPIs SOCIALES
+    # =========================
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        kpi(df, "Incidencia de pobreza", pobreza_bolivia, "%")
+
+    with c2:
+        kpi(df, "Índice de GINI", gini_bolivia, "")
+
+    with c3:
+        kpi(df, "Tasa de desocupación nacional", desocupacion_nacional, "%")
+
+    st.markdown("---")
+
+    # =========================
+    # GRÁFICOS SOCIALES
+    # =========================
+    a, b = st.columns(2)
+
+    with a:
+        grafico_linea(
+            df,
+            pobreza_bolivia,
+            "Bolivia: Incidencia de pobreza",
+            "%"
+        )
+
+    with b:
+        grafico_linea(
+            df,
+            gini_bolivia,
+            "Bolivia: Índice de GINI",
+            "Índice"
+        )
+
+    c, d = st.columns(2)
+
+    with c:
+        grafico_linea(
+            df,
+            desocupacion_nacional,
+            "Tasa de Desocupación Nacional",
+            "%"
+        )
+
+    with d:
+        grafico_lineas_multiples(
+            df,
+            [
+                pobreza_bolivia,
+                desocupacion_nacional
+            ],
+            "Pobreza y desocupación nacional",
+            "%"
+        )
+
+
+
+
+
+
+
+
+
 # =========================
 # FUNCION TARJETA RIESGO
 # =========================
@@ -845,11 +1132,11 @@ def tarjeta_riesgo(titulo, nivel):
 
     st.html(html)
     
-# =========================
+# ========================================================================================================================================================================================================
 # RIESGOS
-# =========================
+# ========================================================================================================================================================================================================
 
-with tab6:
+with tab9:
 
     st.subheader("🚦 Semáforo macroeconómico")
 
