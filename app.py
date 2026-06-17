@@ -179,6 +179,20 @@ def cargar_datos():
     return data
 
 # =========================
+# CARGAR BASE ORIGINAL
+# =========================
+
+try:
+    df_original = cargar_datos()
+except Exception as e:
+    st.error(
+        "No se pudo cargar la base de datos. Verifica que el archivo "
+        f"'{EXCEL_FILE}' exista y que la hoja se llame '{SHEET_NAME}'."
+    )
+    st.exception(e)
+    st.stop()
+
+# =========================
 # FUNCIONES BASE
 # =========================
 
