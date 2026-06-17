@@ -1560,7 +1560,7 @@ with tab1:
     c9, c10, c11, c12 = st.columns(4)
 
     with c9:
-        kpi(df, "PIB a precios de mercado", pib_pm, "MM Bs")
+        kpi(df, "PIB a precios de mercado", pib_pm, "%")
 
     with c10:
         kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
@@ -1881,24 +1881,24 @@ with tab6:
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        kpi(df, "PIB a precios de mercado", pib_pm, "MM Bs")
+        kpi(df, "PIB a precios de mercado", pib_pm, "%")
 
     with c2:
-        kpi(df, "Consumo de hogares", consumo_hogares, "MM Bs")
+        kpi(df, "Consumo de hogares", consumo_hogares, "%")
 
     with c3:
-        kpi(df, "Formación bruta de capital", formacion_capital, "MM Bs")
+        kpi(df, "Formación bruta de capital", formacion_capital, "%")
 
     c4, c5, c6 = st.columns(3)
 
     with c4:
-        kpi(df, "Consumo público", consumo_publico, "MM Bs")
+        kpi(df, "Consumo público", consumo_publico, "%")
 
     with c5:
-        kpi(df, "Exportaciones", expo_bienes_servicios, "MM Bs")
+        kpi(df, "Exportaciones", expo_bienes_servicios, "%")
 
     with c6:
-        kpi(df, "Importaciones", impo_bienes_servicios, "MM Bs")
+        kpi(df, "Importaciones", impo_bienes_servicios, "%")
 
     st.markdown("---")
 
@@ -1909,7 +1909,7 @@ with tab6:
             df,
             pib_pm,
             "PIB a precios de mercado",
-            "Millones de Bs"
+            "En porcentaje"
         )
 
     with b:
@@ -1917,7 +1917,7 @@ with tab6:
             df,
             [consumo_hogares, consumo_publico, formacion_capital],
             "Demanda interna: consumo e inversión",
-            "Millones de Bs"
+            "En porcentaje"
         )
 
     c, d = st.columns(2)
@@ -1927,7 +1927,7 @@ with tab6:
             df,
             [expo_bienes_servicios, impo_bienes_servicios],
             "Sector externo real: exportaciones e importaciones",
-            "Millones de Bs"
+            "En porcentaje"
         )
 
     with d:
@@ -1941,7 +1941,7 @@ with tab6:
                 impo_bienes_servicios
             ],
             "Componentes del PIB por gasto",
-            "Millones de Bs"
+            "En porcentaje"
         )
 
 # =========================
