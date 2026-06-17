@@ -1063,6 +1063,22 @@ depositos = buscar_columna("Depósitos en entidades")
 bol_dep = buscar_columna("Bolivianización Depósitos")
 bol_cred = buscar_columna("Bolivianización Créditos")
 
+encaje_constituido = buscar_columna_multiple([
+    "Encaje constituido por el sistema financiero",
+    "Encaje del sistema financiero"
+])
+
+excedente_encaje_efectivo = buscar_columna_multiple([
+    "Excedente de Encaje en el BCB del sistema financiero ( en efectivo; liquidez del sistema financiero )",
+    "Excedente de Encaje en el BCB del sistema financiero en efectivo",
+])
+
+excedente_encaje_me = buscar_columna_multiple([
+    "Excedente de Encaje en el BCB del sistema financiero en ME",
+    "Excedente de Encaje en ME",
+])
+
+
 # Sector monetario
 base_monetaria = buscar_columna("Base monetaria")
 m1 = buscar_columna("M’1")
@@ -1689,6 +1705,10 @@ with tab5:
     titulo, mensaje, nivel = alerta_financiero(df)
     alerta_sector(titulo, mensaje, nivel)
 
+    # =========================
+    # KPIs FINANCIEROS
+    # =========================
+
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
@@ -1703,11 +1723,53 @@ with tab5:
     with c4:
         kpi(df, "Bolivianización créditos", bol_cred, "%")
 
+    c5, c6, c7 = st.columns(3)
+
+    with c5:
+        kpi(df, "Encaje constituido", encaje_constituido, "MM Bs")
+
+    with c6:
+        kpi(df, "Excedente encaje efectivo", excedente_encaje_efectivo, "MM Bs")
+
+    with c7:
+        kpi(df, "Excedente encaje ME", excedente_encaje_me, "MM $us")
+
     st.markdown("---")
+
+    # =========================
+    # LIQUIDEZ Y ENCAJE
+    # =========================
 
     a, b = st.columns(2)
 
     with a:
+        grafico_linea(
+            df,
+            encaje_constituido,
+            "Encaje constituido por el sistema financiero",
+            "Millones"
+        )
+
+    with b:
+        grafico_lineas_multiples(
+            df,
+            [
+                excedente_encaje_efectivo,
+                excedente_encaje_me
+            ],
+            "Liquidez del sistema financiero: excedente de encaje en el BCB",
+            "Millones"
+        )
+
+    st.markdown("---")
+
+    # =========================
+    # CRÉDITOS, DEPÓSITOS Y BOLIVIANIZACIÓN
+    # =========================
+
+    c, d = st.columns(2)
+
+    with c:
         grafico_lineas_multiples(
             df,
             [credito_privado, depositos],
@@ -1715,14 +1777,13 @@ with tab5:
             "Millones de Bs"
         )
 
-    with b:
+    with d:
         grafico_lineas_multiples(
             df,
             [bol_dep, bol_cred],
             "Bolivianización de depósitos y créditos",
             "%"
         )
-
 # =========================
 # TAB 6: SECTOR REAL
 # =========================
