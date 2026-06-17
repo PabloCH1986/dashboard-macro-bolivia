@@ -1942,7 +1942,7 @@ with tab5:
         kpi(df, "Excedente encaje efectivo", excedente_encaje_efectivo, "MM Bs")
 
     with c7:
-        kpi(df, "Excedente encaje ME", excedente_encaje_me, "MM $us")
+        kpi(df, "Excedente encaje ME", excedente_encaje_me, "MM Bs")
 
     st.markdown("---")
 
