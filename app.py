@@ -1650,10 +1650,10 @@ with tab1:
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        kpi(df, "PIB a precios de mercado", pib_pm, "")
+        kpi(df, "PIB a precios de mercado", pib_pm, "%", tipo="ultimo", delta_tipo="pp")
 
     with c2:
-        kpi(df, "Inflación interanual", inflacion_12m, "%")
+        kpi(df, "Inflación interanual", inflacion_12m, "%", tipo="ultimo", delta_tipo="pp")
 
     with c3:
         kpi(df, "RIN", rin, "MM $us")
