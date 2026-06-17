@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -584,25 +585,25 @@ def tarjeta_riesgo(titulo, nivel):
     html = f"""
     <div style="
         background:{color};
-        padding:28px;
+        padding:24px;
         border-radius:20px;
         border:2px solid {line};
-        min-height:180px;
+        min-height:150px;
         box-shadow:0 8px 22px rgba(0,0,0,0.18);
-        margin-bottom:18px;
+        font-family:Arial, sans-serif;
     ">
         <div style="
-            color:white;
-            font-size:22px;
+            color:#FFFFFF;
+            font-size:21px;
             font-weight:800;
-            margin-bottom:35px;
+            margin-bottom:32px;
         ">
             {titulo}
         </div>
 
         <div style="
-            color:white;
-            font-size:44px;
+            color:#FFFFFF;
+            font-size:42px;
             font-weight:900;
         ">
             {nivel}
@@ -610,8 +611,7 @@ def tarjeta_riesgo(titulo, nivel):
     </div>
     """
 
-    st.markdown(html, unsafe_allow_html=True)
-
+    components.html(html, height=210)
 
 def clasificar_normal(valor, bajo, medio):
     if valor is None:
