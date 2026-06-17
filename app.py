@@ -1069,6 +1069,27 @@ m1 = buscar_columna("M’1")
 m2 = buscar_columna("M’2")
 m3 = buscar_columna("M’3")
 
+titulos_bcb_usd = buscar_columna_multiple([
+    "Saldo de Títulos del Banco Central de Bolivia (millones de $us)",
+    "Saldo de Titulos del Banco Central de Bolivia (millones de $us)",
+    "Saldo de Títulos del Banco Central de Bolivia",
+    "Saldo de Titulos del Banco Central de Bolivia"
+])
+
+tasa_reporto_mn = buscar_columna_multiple([
+    "Tasas premio de reporto del BCB en Moneda nacional",
+    "Tasa premio de reporto del BCB en Moneda nacional",
+    "Tasas premio de reporto",
+    "Premio de reporto"
+])
+
+
+
+
+
+
+
+
 # Sector fiscal
 ingresos_totales_spnf = buscar_columna("Ingresos Totales SPNF")
 ingresos_corrientes_spnf = buscar_columna("Ingresos Corrientes del SPNF")
@@ -1591,6 +1612,10 @@ with tab4:
     titulo, mensaje, nivel = alerta_monetario(df)
     alerta_sector(titulo, mensaje, nivel)
 
+    # =========================
+    # KPIs MONETARIOS
+    # =========================
+
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
@@ -1605,7 +1630,19 @@ with tab4:
     with c4:
         kpi(df, "M'3", m3, "MM Bs")
 
+    c5, c6 = st.columns(2)
+
+    with c5:
+        kpi(df, "Tasa premio reporto MN", tasa_reporto_mn, "%")
+
+    with c6:
+        kpi(df, "Títulos BCB", titulos_bcb_usd, "MM $us")
+
     st.markdown("---")
+
+    # =========================
+    # GRÁFICOS MONETARIOS PRINCIPALES
+    # =========================
 
     a, b = st.columns(2)
 
@@ -1618,6 +1655,28 @@ with tab4:
             [m1, m2, m3],
             "Agregados monetarios: M'1, M'2 y M'3",
             "Millones de Bs"
+        )
+
+    # =========================
+    # NUEVOS GRÁFICOS MONETARIOS
+    # =========================
+
+    c, d = st.columns(2)
+
+    with c:
+        grafico_linea(
+            df,
+            tasa_reporto_mn,
+            "Tasas premio de reporto del BCB en moneda nacional",
+            "%"
+        )
+
+    with d:
+        grafico_linea(
+            df,
+            titulos_bcb_usd,
+            "Saldo de títulos del Banco Central de Bolivia",
+            "Millones de $us"
         )
 
 # =========================
