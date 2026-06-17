@@ -281,7 +281,7 @@ def grafico_linea(df, col, titulo, unidad=""):
         go.Scatter(
             x=s["fecha"],
             y=s[col],
-            mode="lines+markers",
+            mode="lines",
             line=dict(
                 width=3.5,
                 color="#0B3B36"
@@ -459,7 +459,7 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
                 go.Scatter(
                     x=s["fecha"],
                     y=s[c],
-                    mode="lines+markers",
+                    mode="lines",
                     name=nombres.get(c, c),
                     line=dict(
                         width=3.2,
@@ -625,7 +625,7 @@ def grafico_doble_eje(
                 go.Scatter(
                     x=s_izq["fecha"],
                     y=s_izq[col_izq],
-                    mode="lines+markers",
+                    mode="lines",
                     name=nombre_izq,
                     line=dict(
                         width=3.5,
@@ -665,7 +665,7 @@ def grafico_doble_eje(
                 go.Scatter(
                     x=s_der["fecha"],
                     y=s_der[col_der],
-                    mode="lines+markers",
+                    mode="lines",
                     name=nombre_der,
                     line=dict(
                         width=3.5,
