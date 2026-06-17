@@ -1029,37 +1029,87 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
 # =========================
 
 with tab1:
+    st.subheader("📈 Resumen ejecutivo de indicadores clave")
+
     titulo, mensaje, nivel = alerta_real(df)
-    alerta_sector(titulo, mensaje, nivel)
+    alerta_sector("Lectura ejecutiva general", mensaje, nivel)
 
-    a, b = st.columns(2)
+    # =========================
+    # FILA 1: INDICADORES MACRO PRINCIPALES
+    # =========================
 
-    with a:
-        grafico_linea(df, igae, "IGAE - Actividad económica")
+    c1, c2, c3, c4 = st.columns(4)
 
-    with b:
-        grafico_linea(df, inflacion_12m, "Inflación interanual", "%")
+    with c1:
+        kpi(df, "Actividad económica - IGAE", igae, "")
 
-    c, d = st.columns(2)
+    with c2:
+        kpi(df, "Inflación interanual", inflacion_12m, "%")
 
-    with c:
-        grafico_linea(df, rin, "Reservas internacionales netas", "MM $us")
+    with c3:
+        kpi(df, "RIN", rin, "MM $us")
 
-    with d:
-        grafico_lineas_multiples(
-            df,
-            [credito_privado, depositos],
-            "Crédito y depósitos del sistema financiero",
-            "Millones de Bs"
-        )
+    with c4:
+        kpi(df, "Tipo de cambio venta", tc_venta, "Bs/$us")
+
+    # =========================
+    # FILA 2: MONETARIO Y FINANCIERO
+    # =========================
+
+    c5, c6, c7, c8 = st.columns(4)
+
+    with c5:
+        kpi(df, "Base monetaria", base_monetaria, "MM Bs")
+
+    with c6:
+        kpi(df, "Crédito privado", credito_privado, "MM Bs")
+
+    with c7:
+        kpi(df, "Depósitos", depositos, "MM Bs")
+
+    with c8:
+        kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
+
+    # =========================
+    # FILA 3: REAL, FISCAL Y SOCIAL
+    # =========================
+
+    c9, c10, c11, c12 = st.columns(4)
+
+    with c9:
+        kpi(df, "PIB a precios de mercado", pib_pm, "MM Bs")
+
+    with c10:
+        kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
+
+    with c11:
+        kpi(df, "Incidencia de pobreza", pobreza_bolivia, "%")
+
+    with c12:
+        kpi(df, "Tasa de desocupación", desocupacion_nacional, "%")
 
 # =========================
 # TAB 2: INFLACIÓN
 # =========================
 
 with tab2:
+    st.subheader("🔥 Sector precios - Inflación")
+
     titulo, mensaje, nivel = alerta_precios(df)
     alerta_sector(titulo, mensaje, nivel)
+
+    c1, c2, c3 = st.columns(3)
+
+    with c1:
+        kpi(df, "Inflación interanual", inflacion_12m, "%")
+
+    with c2:
+        kpi(df, "Inflación mensual", inflacion_mensual, "%")
+
+    with c3:
+        kpi(df, "Inflación acumulada", inflacion_acumulada, "%")
+
+    st.markdown("---")
 
     grafico_linea(df, inflacion_12m, "Inflación a doce meses", "%")
 
@@ -1072,14 +1122,46 @@ with tab2:
 
     with i2:
         grafico_linea(df, inflacion_acumulada, "Variación acumulada en el año", "%")
-
+        
 # =========================
 # TAB 3: SECTOR EXTERNO
 # =========================
 
 with tab3:
+    st.subheader("🌎 Sector externo")
+
     titulo, mensaje, nivel = alerta_externo(df)
     alerta_sector(titulo, mensaje, nivel)
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        kpi(df, "RIN", rin, "MM $us")
+
+    with c2:
+        kpi(df, "Tipo de cambio referencial", tc_venta, "Bs/$us")
+
+    with c3:
+        kpi(df, "Exportaciones", exportaciones, "MM $us")
+
+    with c4:
+        kpi(df, "Importaciones", importaciones, "MM $us")
+
+    c5, c6, c7, c8 = st.columns(4)
+
+    with c5:
+        kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
+
+    with c6:
+        kpi(df, "Divisas", divisas, "MM $us")
+
+    with c7:
+        kpi(df, "Oro", oro, "MM $us")
+
+    with c8:
+        kpi(df, "Recursos alta liquidez", recursos_alta_liquidez, "MM $us")
+
+    st.markdown("---")
 
     a, b = st.columns(2)
 
@@ -1107,8 +1189,26 @@ with tab3:
 # =========================
 
 with tab4:
+    st.subheader("💵 Sector monetario")
+
     titulo, mensaje, nivel = alerta_monetario(df)
     alerta_sector(titulo, mensaje, nivel)
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        kpi(df, "Base monetaria", base_monetaria, "MM Bs")
+
+    with c2:
+        kpi(df, "M'1", m1, "MM Bs")
+
+    with c3:
+        kpi(df, "M'2", m2, "MM Bs")
+
+    with c4:
+        kpi(df, "M'3", m3, "MM Bs")
+
+    st.markdown("---")
 
     a, b = st.columns(2)
 
@@ -1128,8 +1228,26 @@ with tab4:
 # =========================
 
 with tab5:
+    st.subheader("🏦 Sector financiero")
+
     titulo, mensaje, nivel = alerta_financiero(df)
     alerta_sector(titulo, mensaje, nivel)
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        kpi(df, "Crédito privado", credito_privado, "MM Bs")
+
+    with c2:
+        kpi(df, "Depósitos", depositos, "MM Bs")
+
+    with c3:
+        kpi(df, "Bolivianización depósitos", bol_dep, "%")
+
+    with c4:
+        kpi(df, "Bolivianización créditos", bol_cred, "%")
+
+    st.markdown("---")
 
     a, b = st.columns(2)
 
