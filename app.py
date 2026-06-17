@@ -266,6 +266,7 @@ def variacion_interanual(df, col):
     return ((actual[col] / base) - 1) * 100
 
 
+
 def formato_numero(x):
     if x is None or pd.isna(x):
         return "Sin dato"
@@ -273,17 +274,51 @@ def formato_numero(x):
     return f"{x:,.2f}"
 
 
-def kpi(df, titulo, col, unidad=""):
-    valor, fecha = ultimo_valor(df, col)
-    yoy = variacion_interanual(df, col)
+def kpi(df, titulo, col, unidad="", tipo="ultimo", delta_tipo="interanual"):
+    """
+    tipo:
+    - "ultimo": muestra último dato disponible.
+    - "acumulado": muestra acumulado anual al último dato disponible.
+
+    delta_tipo:
+    - "interanual": variación porcentual interanual.
+    - "pp": variación interanual en puntos porcentuales.
+    - "acumulado": variación porcentual del acumulado anual.
+    - "ninguno": no muestra delta.
+    """
+
+    if tipo == "acumulado":
+        valor, fecha = valor_acumulado_anual(df, col)
+    else:
+        valor, fecha = ultimo_valor(df, col)
 
     if valor is None:
         st.metric(titulo, "Sin dato")
         return
 
-    delta = f"{yoy:,.1f}% interanual" if yoy is not None else None
+    delta = None
+
+    if delta_tipo == "interanual":
+        yoy = variacion_interanual(df, col)
+        delta = f"{yoy:,.1f}% interanual" if yoy is not None else None
+
+    elif delta_tipo == "pp":
+        pp = variacion_interanual_pp(df, col)
+        delta = f"{pp:,.1f} p.p. interanual" if pp is not None else None
+
+    elif delta_tipo == "acumulado":
+        yoy_acum = variacion_acumulada_interanual(df, col)
+        delta = f"{yoy_acum:,.1f}% acum. interanual" if yoy_acum is not None else None
+
+    elif delta_tipo == "ninguno":
+        delta = None
 
     st.metric(titulo, f"{formato_numero(valor)} {unidad}", delta)
+
+    if tipo == "acumulado":
+        texto_fecha = f"Acumulado a: {fecha.strftime('%d/%m/%Y')}"
+    else:
+        texto_fecha = f"Último dato: {fecha.strftime('%d/%m/%Y')}"
 
     st.markdown(
         f"""
@@ -293,11 +328,102 @@ def kpi(df, titulo, col, unidad=""):
             margin-top:6px;
             font-weight:500;
         ">
-            Último dato: {fecha.strftime('%d/%m/%Y')}
+            {texto_fecha}
         </p>
         """,
         unsafe_allow_html=True
     )
+
+
+def valor_acumulado_anual(df, col):
+    if col is None:
+        return None, None
+
+    if col not in df.columns:
+        return None, None
+
+    s = df[["fecha", col]].dropna().sort_values("fecha")
+
+    if s.empty:
+        return None, None
+
+    ultima_fecha = s["fecha"].max()
+    gestion = ultima_fecha.year
+
+    s_gestion = s[
+        (s["fecha"].dt.year == gestion) &
+        (s["fecha"] <= ultima_fecha)
+    ]
+
+    if s_gestion.empty:
+        return None, None
+
+    return s_gestion[col].sum(), ultima_fecha
+
+
+def variacion_acumulada_interanual(df, col):
+    if col is None:
+        return None
+
+    if col not in df.columns:
+        return None
+
+    s = df[["fecha", col]].dropna().sort_values("fecha")
+
+    if s.empty:
+        return None
+
+    ultima_fecha = s["fecha"].max()
+    gestion_actual = ultima_fecha.year
+    gestion_anterior = gestion_actual - 1
+    mes_corte = ultima_fecha.month
+
+    actual = s[
+        (s["fecha"].dt.year == gestion_actual) &
+        (s["fecha"].dt.month <= mes_corte)
+    ][col].sum()
+
+    anterior = s[
+        (s["fecha"].dt.year == gestion_anterior) &
+        (s["fecha"].dt.month <= mes_corte)
+    ][col].sum()
+
+    if anterior == 0 or pd.isna(anterior):
+        return None
+
+    return ((actual / anterior) - 1) * 100
+
+
+def variacion_interanual_pp(df, col):
+    if col is None:
+        return None
+
+    if col not in df.columns:
+        return None
+
+    s = df[["fecha", col]].dropna().sort_values("fecha")
+
+    if s.empty:
+        return None
+
+    actual = s.iloc[-1]
+    base_fecha = actual["fecha"] - pd.DateOffset(years=1)
+
+    ant = s[s["fecha"] <= base_fecha]
+
+    if ant.empty:
+        return None
+
+    base = ant.iloc[-1][col]
+
+    if pd.isna(base):
+        return None
+
+    return actual[col] - base
+
+
+
+
 
 
 def grafico_linea(df, col, titulo, unidad=""):
@@ -1560,16 +1686,16 @@ with tab1:
     c9, c10, c11, c12 = st.columns(4)
 
     with c9:
-        kpi(df, "Tasa premio reporto MN", tasa_reporto_mn, "%")
+        kpi(df, "Tasa premio reporto MN", tasa_reporto_mn, "%", tipo="ultimo", delta_tipo="pp")
 
     with c10:
-        kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
+        kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs", tipo="acumulado", delta_tipo="acumulado")
 
     with c11:
-        kpi(df, "Incidencia de pobreza", pobreza_bolivia, "%")
+        kpi(df, "Incidencia de pobreza", pobreza_bolivia, "%", tipo="ultimo", delta_tipo="pp")
 
     with c12:
-        kpi(df, "Tasa de desocupación", desocupacion_nacional, "%")
+        kpi(df, "Tasa de desocupación", desocupacion_nacional, "%", tipo="ultimo", delta_tipo="pp")
 
 # =========================
 # TAB 2: INFLACIÓN
@@ -1584,13 +1710,13 @@ with tab2:
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        kpi(df, "Inflación interanual", inflacion_12m, "%")
+        kpi(df, "Inflación interanual", inflacion_12m, "%", tipo="ultimo", delta_tipo="pp")
 
     with c2:
-        kpi(df, "Inflación mensual", inflacion_mensual, "%")
+        kpi(df, "Inflación mensual", inflacion_mensual, "%", tipo="ultimo", delta_tipo="pp")
 
     with c3:
-        kpi(df, "Inflación acumulada", inflacion_acumulada, "%")
+        kpi(df, "Inflación acumulada", inflacion_acumulada, "%", tipo="ultimo", delta_tipo="pp")
 
     st.markdown("---")
 
@@ -1625,15 +1751,15 @@ with tab3:
         kpi(df, "Tipo de cambio referencial", tc_venta, "Bs/$us")
 
     with c3:
-        kpi(df, "Exportaciones", exportaciones_valor, "MM $us")
+        kpi(df, "Exportaciones", exportaciones_valor, "MM $us", tipo="acumulado", delta_tipo="acumulado")
 
     with c4:
-        kpi(df, "Importaciones", importaciones_valor, "MM $us")
+        kpi(df, "Importaciones", importaciones_valor, "MM $us", tipo="acumulado", delta_tipo="acumulado")
 
     c5, c6, c7, c8 = st.columns(4)
 
     with c5:
-        kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
+        kpi(df, "Saldo comercial", saldo_comercial, "MM $us", tipo="acumulado", delta_tipo="acumulado")
 
     with c6:
         kpi(df, "Divisas", divisas, "MM $us")
@@ -1720,7 +1846,7 @@ with tab4:
     c5, c6 = st.columns(2)
 
     with c5:
-        kpi(df, "Tasa premio reporto MN", tasa_reporto_mn, "%")
+        kpi(df, "Tasa premio reporto MN", tasa_reporto_mn, "%", tipo="ultimo", delta_tipo="pp")
 
     with c6:
         kpi(df, "Títulos BCB", titulos_bcb_usd, "MM $us")
@@ -1802,10 +1928,10 @@ with tab5:
         kpi(df, "Depósitos", depositos, "MM Bs")
 
     with c3:
-        kpi(df, "Bolivianización depósitos", bol_dep, "%")
+        kpi(df, "Bolivianización depósitos", bol_dep, "%", tipo="ultimo", delta_tipo="pp")
 
     with c4:
-        kpi(df, "Bolivianización créditos", bol_cred, "%")
+        kpi(df, "Bolivianización créditos", bol_cred, "%", tipo="ultimo", delta_tipo="pp")
 
     c5, c6, c7 = st.columns(3)
 
@@ -1957,16 +2083,16 @@ with tab7:
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        kpi(df, "Ingresos Totales SPNF", ingresos_totales_spnf, "MM Bs")
+        kpi(df, "Ingresos Totales SPNF", ingresos_totales_spnf, "MM Bs", tipo="acumulado", delta_tipo="acumulado")
 
     with c2:
-        kpi(df, "Egresos Totales SPNF", egresos_totales_spnf, "MM Bs")
+        kpi(df, "Egresos Totales SPNF", egresos_totales_spnf, "MM Bs", tipo="acumulado", delta_tipo="acumulado")
 
     with c3:
-        kpi(df, "Resultado Corriente SPNF", resultado_corriente_spnf, "MM Bs")
+        kpi(df, "Resultado Corriente SPNF", resultado_corriente_spnf, "MM Bs", tipo="acumulado", delta_tipo="acumulado")
 
     with c4:
-        kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs")
+        kpi(df, "Resultado Global SPNF", resultado_global_spnf, "MM Bs", tipo="acumulado", delta_tipo="acumulado")
 
     st.markdown("---")
 
@@ -2043,13 +2169,13 @@ with tab8:
     c1, c2, c3 = st.columns(3)
 
     with c1:
-        kpi(df, "Incidencia de pobreza", pobreza_bolivia, "%")
+        kpi(df, "Incidencia de pobreza", pobreza_bolivia, "%", tipo="ultimo", delta_tipo="pp")
 
     with c2:
-        kpi(df, "Índice de GINI", gini_bolivia, "")
+        kpi(df, "Índice de GINI", gini_bolivia, "", tipo="ultimo", delta_tipo="pp")
 
     with c3:
-        kpi(df, "Tasa de desocupación nacional", desocupacion_nacional, "%")
+        kpi(df, "Tasa de desocupación nacional", desocupacion_nacional, "%", tipo="ultimo", delta_tipo="pp")
 
     st.markdown("---")
 
