@@ -1585,27 +1585,6 @@ with col2:
 
 st.markdown("---")
 
-# =========================
-# KPIs PRINCIPALES
-# =========================
-
-
-titulo_precios, mensaje_precios, nivel_precios = alerta_precios(df)
-titulo_externo, mensaje_externo, nivel_externo = alerta_externo(df)
-
-nivel_general = "ok"
-
-if nivel_precios in ["warning", "danger"] or nivel_externo in ["warning", "danger"]:
-    nivel_general = "warning"
-
-if nivel_precios == "danger" or nivel_externo == "danger":
-    nivel_general = "danger"
-
-alerta_sector(
-    "Lectura ejecutiva general",
-    f"{mensaje_precios} {mensaje_externo}",
-    nivel_general
-)
 
 # =========================
 # TABS
@@ -1630,8 +1609,23 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
 with tab1:
     st.subheader("📈 Resumen ejecutivo de indicadores clave")
 
-    titulo, mensaje, nivel = alerta_real(df)
-    alerta_sector("Lectura ejecutiva general", mensaje, nivel)
+    titulo_precios, mensaje_precios, nivel_precios = alerta_precios(df)
+    titulo_externo, mensaje_externo, nivel_externo = alerta_externo(df)
+    
+    nivel_general = "ok"
+    
+    if nivel_precios in ["warning", "danger"] or nivel_externo in ["warning", "danger"]:
+        nivel_general = "warning"
+    
+    if nivel_precios == "danger" or nivel_externo == "danger":
+        nivel_general = "danger"
+    
+    alerta_sector(
+        "Lectura ejecutiva general",
+        f"{mensaje_precios} {mensaje_externo}",
+        nivel_general
+)
+
 
     # =========================
     # FILA 1: INDICADORES MACRO PRINCIPALES
