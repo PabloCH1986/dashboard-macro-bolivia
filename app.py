@@ -271,7 +271,13 @@ def formato_numero(x):
     if x is None or pd.isna(x):
         return "Sin dato"
 
-    return f"{x:,.2f}"
+    texto = f"{x:,.2f}"
+
+    # Cambia formato inglés a formato español:
+    # 36,114.29 -> 36.114,29
+    texto = texto.replace(",", "X").replace(".", ",").replace("X", ".")
+
+    return texto
 
 
 def kpi(df, titulo, col, unidad="", tipo="ultimo", delta_tipo="interanual"):
@@ -299,16 +305,16 @@ def kpi(df, titulo, col, unidad="", tipo="ultimo", delta_tipo="interanual"):
     delta = None
 
     if delta_tipo == "interanual":
-        yoy = variacion_interanual(df, col)
-        delta = f"{yoy:,.1f}% interanual" if yoy is not None else None
+    yoy = variacion_interanual(df, col)
+    delta = f"{formato_numero_1d(yoy)}% interanual" if yoy is not None else None
 
     elif delta_tipo == "pp":
-        pp = variacion_interanual_pp(df, col)
-        delta = f"{pp:,.1f} p.p. interanual" if pp is not None else None
+    pp = variacion_interanual_pp(df, col)
+    delta = f"{formato_numero_1d(pp)} p.p. interanual" if pp is not None else None
 
-    elif delta_tipo == "acumulado":
-        yoy_acum = variacion_acumulada_interanual(df, col)
-        delta = f"{yoy_acum:,.1f}% acum. interanual" if yoy_acum is not None else None
+    elif delta_tipo == "acumulado_pct":
+    yoy_acum = variacion_acumulada_interanual(df, col)
+    delta = f"{formato_numero_1d(yoy_acum)}% acum. interanual" if yoy_acum is not None else None
 
     elif delta_tipo == "ninguno":
         delta = None
