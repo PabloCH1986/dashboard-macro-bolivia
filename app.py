@@ -4,6 +4,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 import uuid
 import base64
+import os
+import unicodedata
+
+# =========================
+# CONFIGURACIÓN GENERAL
+# =========================
 
 st.set_page_config(
     page_title="Dashboard Macroeconómico CENGOB - Bolivia",
@@ -15,8 +21,8 @@ EXCEL_FILE = "Info.xlsx"
 SHEET_NAME = "data"
 
 # =========================
-#    TEMA AUTOMÁTICO
-# ========================= 
+# TEMA AUTOMÁTICO
+# =========================
 
 st.markdown("""
 <style>
@@ -69,13 +75,10 @@ p,label{
     border-left:5px solid #C9A227;
     border-radius:18px;
     padding:18px;
-
     box-shadow:0 4px 12px rgba(0,0,0,0.05);
-
     border-top:1px solid #E5E7EB;
     border-right:1px solid #E5E7EB;
     border-bottom:1px solid #E5E7EB;
-
     transition:0.3s;
 }
 
@@ -94,11 +97,10 @@ p,label{
 </style>
 """, unsafe_allow_html=True)
 
-
-
 # =========================
 # CARGA DE DATOS
 # =========================
+
 @st.cache_data(ttl=60)
 def cargar_datos():
     raw = pd.read_excel(EXCEL_FILE, sheet_name=SHEET_NAME, header=None)
@@ -109,6 +111,7 @@ def cargar_datos():
 
     nombres_unicos = []
     contador = {}
+
     for n in nombres:
         if n in contador:
             contador[n] += 1
@@ -131,166 +134,97 @@ def cargar_datos():
 
     return data
 
-df_original = cargar_datos()
+
+try:
+    df_original = cargar_datos()
+except Exception as e:
+    st.error(
+        "No se pudo cargar la base de datos. Verifica que el archivo "
+        f"'{EXCEL_FILE}' exista y que la hoja se llame '{SHEET_NAME}'."
+    )
+    st.exception(e)
+    st.stop()
 
 # =========================
-# FUNCIONES
+# FUNCIONES BASE
 # =========================
 
-
-
-# =========================
-# LECTURA AUTOMÁTICA POR SECTOR
-# =========================
-
-def alerta_precios(df):
-    infl_val, _ = ultimo_valor(df, inflacion_12m)
-
-    if infl_val is None:
-        return "Alerta de precios", "No se cuenta con dato suficiente de inflación interanual.", "info"
-
-    if infl_val >= 6:
-        return "Alerta de precios", "La inflación interanual se encuentra en zona de presión. Conviene monitorear alimentos, transporte y expectativas.", "danger"
-    elif infl_val >= 3:
-        return "Alerta de precios", "La inflación se mantiene en rango de vigilancia. Se recomienda seguimiento preventivo.", "warning"
-    else:
-        return "Alerta de precios", "La inflación se encuentra en un rango relativamente contenido.", "ok"
-
-
-def alerta_externo(df):
-    rin_val, _ = ultimo_valor(df, rin)
-
-    if rin_val is None:
-        return "Alerta externa", "No se cuenta con dato suficiente de reservas internacionales.", "info"
-
-    if rin_val < 2000:
-        return "Alerta externa", "Las reservas internacionales se encuentran en zona crítica. Existe riesgo de presión cambiaria y restricción externa.", "danger"
-    elif rin_val < 5000:
-        return "Alerta externa", "Las reservas internacionales están en zona de vigilancia. Se recomienda monitorear divisas, oro y balanza comercial.", "warning"
-    else:
-        return "Alerta externa", "La posición externa muestra un nivel relativamente adecuado de reservas.", "ok"
-
-
-def alerta_monetario(df):
-    bm_yoy = variacion_interanual(df, base_monetaria)
-
-    if bm_yoy is None:
-        return "Alerta monetaria", "No se cuenta con información suficiente para calcular la variación interanual de la base monetaria.", "info"
-
-    if bm_yoy >= 15:
-        return "Alerta monetaria", "La base monetaria muestra una expansión elevada. Puede generar presión sobre precios, liquidez y expectativas.", "warning"
-    elif bm_yoy < 0:
-        return "Alerta monetaria", "La base monetaria presenta contracción, lo que puede reflejar menor liquidez en la economía.", "warning"
-    else:
-        return "Alerta monetaria", "La dinámica monetaria se mantiene en un rango de seguimiento regular.", "ok"
-
-
-def alerta_financiero(df):
-    cred_yoy = variacion_interanual(df, credito_privado)
-    dep_yoy = variacion_interanual(df, depositos)
-
-    if cred_yoy is None and dep_yoy is None:
-        return "Alerta financiera", "No se cuenta con información suficiente de crédito y depósitos.", "info"
-
-    if cred_yoy is not None and dep_yoy is not None and cred_yoy > dep_yoy + 5:
-        return "Alerta financiera", "El crédito crece por encima de los depósitos. Conviene monitorear liquidez, fondeo y calidad de cartera.", "warning"
-    elif dep_yoy is not None and dep_yoy < 0:
-        return "Alerta financiera", "Los depósitos muestran contracción interanual. Puede existir presión de liquidez en el sistema financiero.", "danger"
-    else:
-        return "Alerta financiera", "El sistema financiero muestra una dinámica relativamente estable entre crédito y depósitos.", "ok"
-
-
-def alerta_real(df):
-    pib_yoy = variacion_interanual(df, pib_pm)
-    consumo_yoy = variacion_interanual(df, consumo_hogares)
-    inversion_yoy = variacion_interanual(df, formacion_capital)
-
-    if pib_yoy is None:
-        return "Alerta sector real", "No se cuenta con información suficiente para calcular el crecimiento interanual del PIB.", "info"
-
-    if pib_yoy < 0:
-        return "Alerta sector real", "El PIB muestra contracción interanual. Se recomienda revisar consumo, inversión y sector externo real.", "danger"
-    elif inversion_yoy is not None and inversion_yoy < 0:
-        return "Alerta sector real", "El PIB crece, pero la formación bruta de capital muestra debilidad. Existe riesgo sobre el crecimiento futuro.", "warning"
-    elif consumo_yoy is not None and consumo_yoy < 0:
-        return "Alerta sector real", "El consumo de hogares muestra deterioro. Puede reflejar menor dinamismo de la demanda interna.", "warning"
-    else:
-        return "Alerta sector real", "La actividad real mantiene una trayectoria positiva según los últimos datos disponibles.", "ok"
-
-
-def alerta_fiscal(df):
-    resultado_global, _ = ultimo_valor(df, resultado_global_spnf)
-    ingresos_yoy = variacion_interanual(df, ingresos_totales_spnf)
-    egresos_yoy = variacion_interanual(df, egresos_totales_spnf)
-
-    if resultado_global is None:
-        return "Alerta fiscal", "No se cuenta con dato suficiente del resultado fiscal global del SPNF.", "info"
-
-    if resultado_global < 0 and egresos_yoy is not None and ingresos_yoy is not None and egresos_yoy > ingresos_yoy:
-        return "Alerta fiscal", "El resultado fiscal global es deficitario y los egresos crecen por encima de los ingresos. Riesgo fiscal elevado.", "danger"
-    elif resultado_global < 0:
-        return "Alerta fiscal", "El SPNF registra déficit global. Se recomienda monitorear ingresos, gasto corriente y gasto de capital.", "warning"
-    else:
-        return "Alerta fiscal", "El resultado fiscal global se mantiene en terreno positivo o sin señales críticas inmediatas.", "ok"
-
-
-def alerta_social(df):
-    pobreza_val, _ = ultimo_valor(df, pobreza_bolivia)
-    desocupacion_val, _ = ultimo_valor(df, desocupacion_nacional)
-    gini_val, _ = ultimo_valor(df, gini_bolivia)
-
-    if pobreza_val is None and desocupacion_val is None and gini_val is None:
-        return "Alerta social", "No se cuenta con información suficiente de pobreza, desigualdad o desocupación.", "info"
-
-    if pobreza_val is not None and pobreza_val >= 35:
-        return "Alerta social", "La incidencia de pobreza se mantiene elevada. Riesgo social alto sobre ingresos, empleo y bienestar.", "danger"
-    elif desocupacion_val is not None and desocupacion_val >= 8:
-        return "Alerta social", "La tasa de desocupación nacional se encuentra en zona de alerta. Conviene monitorear empleo e ingresos laborales.", "warning"
-    elif gini_val is not None and gini_val >= 0.45:
-        return "Alerta social", "El índice de GINI muestra una desigualdad relevante. Se recomienda seguimiento distributivo.", "warning"
-    else:
-        return "Alerta social", "Los indicadores sociales no muestran una señal crítica inmediata según los últimos datos disponibles.", "ok"
-
-
-
+def normalizar_texto(texto):
+    texto = str(texto).lower().strip()
+    texto = unicodedata.normalize("NFKD", texto)
+    texto = "".join(c for c in texto if not unicodedata.combining(c))
+    return texto
 
 
 def buscar_columna(texto):
-    texto = texto.lower()
+    texto_norm = normalizar_texto(texto)
+
     for col in df_original.columns:
-        if col != "fecha" and texto in str(col).lower():
+        if col != "fecha" and texto_norm in normalizar_texto(col):
+            return col
+
+    return None
+
+
+def buscar_columna_multiple(opciones):
+    for opcion in opciones:
+        col = buscar_columna(opcion)
+        if col is not None:
             return col
     return None
+
 
 def ultimo_valor(df, col):
     if col is None:
         return None, None
+
+    if col not in df.columns:
+        return None, None
+
     s = df[["fecha", col]].dropna()
+
     if s.empty:
         return None, None
+
+    s = s.sort_values("fecha")
     u = s.iloc[-1]
+
     return u[col], u["fecha"]
+
 
 def variacion_interanual(df, col):
     if col is None:
         return None
-    s = df[["fecha", col]].dropna().sort_values("fecha")
-    if len(s) < 13:
+
+    if col not in df.columns:
         return None
+
+    s = df[["fecha", col]].dropna().sort_values("fecha")
+
+    if len(s) < 2:
+        return None
+
     actual = s.iloc[-1]
     base_fecha = actual["fecha"] - pd.DateOffset(years=1)
     ant = s[s["fecha"] <= base_fecha]
+
     if ant.empty:
         return None
+
     base = ant.iloc[-1][col]
+
     if base == 0 or pd.isna(base):
         return None
+
     return ((actual[col] / base) - 1) * 100
+
 
 def formato_numero(x):
     if x is None or pd.isna(x):
         return "Sin dato"
+
     return f"{x:,.2f}"
+
 
 def kpi(df, titulo, col, unidad=""):
     valor, fecha = ultimo_valor(df, col)
@@ -301,28 +235,34 @@ def kpi(df, titulo, col, unidad=""):
         return
 
     delta = f"{yoy:,.1f}% interanual" if yoy is not None else None
+
     st.metric(titulo, f"{formato_numero(valor)} {unidad}", delta)
+
     st.markdown(
-    f"""
-    <p style="
-        color:#0B3B36;
-        font-size:15px;
-        margin-top:6px;
-        font-weight:500;
-    ">
-        Último dato: {fecha.strftime('%d/%m/%Y')}
-    </p>
-    """,
-    unsafe_allow_html=True
+        f"""
+        <p style="
+            color:#0B3B36;
+            font-size:15px;
+            margin-top:6px;
+            font-weight:500;
+        ">
+            Último dato: {fecha.strftime('%d/%m/%Y')}
+        </p>
+        """,
+        unsafe_allow_html=True
     )
 
-def grafico_linea(df, col, titulo, unidad=""):
 
+def grafico_linea(df, col, titulo, unidad=""):
     if col is None:
         st.warning(f"No se encontró: {titulo}")
         return
 
-    s = df[["fecha", col]].dropna()
+    if col not in df.columns:
+        st.warning(f"No se encontró la columna para: {titulo}")
+        return
+
+    s = df[["fecha", col]].dropna().sort_values("fecha")
 
     if s.empty:
         st.warning(f"Sin datos para: {titulo}")
@@ -331,123 +271,69 @@ def grafico_linea(df, col, titulo, unidad=""):
     fig = go.Figure()
 
     fig.add_trace(
-    go.Scatter(
-        x=s["fecha"],
-        y=s[col],
-        mode="lines",
-        line=dict(width=3.5, color="#0B3B36"),
-        hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
+        go.Scatter(
+            x=s["fecha"],
+            y=s[col],
+            mode="lines",
+            line=dict(width=3.5, color="#0B3B36"),
+            hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
+        )
     )
-)
 
     fig.update_layout(
-    
         title=titulo,
         height=430,
-    
         template="plotly_white",
-    
-        # FONDO CELESTE CLARO
         paper_bgcolor="#DCEAF7",
         plot_bgcolor="#DCEAF7",
-    
-        # TEXTO NEGRO
-        font=dict(
-            color="#000000",
-            size=14
-        ),
-    
-        # TITULOS NEGROS
-        title_font=dict(
-            color="#000000",
-            size=22
-        ),
-    
-        margin=dict(
-            l=20,
-            r=20,
-            t=60,
-            b=30
-        ),
-    
+        font=dict(color="#000000", size=14),
+        title_font=dict(color="#000000", size=22),
+        margin=dict(l=20, r=20, t=60, b=30),
         xaxis_title="",
         yaxis_title=unidad,
-    
         hovermode="x unified",
-    
-        legend=dict(
-            font=dict(
-                color="#000000",
-                size=13
-            )
-        ),
-    
+        legend=dict(font=dict(color="#000000", size=13)),
         xaxis=dict(
-    
             rangeselector=dict(
-    
                 bgcolor="#FFFFFF",
                 activecolor="#0B3B36",
-    
-                font=dict(
-                    color="#000000",
-                    size=13
-                ),
-    
+                font=dict(color="#000000", size=13),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
                     dict(count=10, label="10A", step="year", stepmode="backward"),
-                    dict(step="all", label="all")
+                    dict(step="all", label="Todo")
                 ])
             ),
-    
             rangeslider=dict(
                 visible=True,
                 bgcolor="#CFE3F5",
                 bordercolor="#94A3B8"
             ),
-    
             type="date",
-    
-            tickfont=dict(
-                color="#000000"
-            ),
-    
+            tickfont=dict(color="#000000"),
             gridcolor="rgba(0,0,0,0.08)"
         ),
-    
         yaxis=dict(
-    
-            tickfont=dict(
-                color="#000000"
-            ),
-    
+            tickfont=dict(color="#000000"),
             gridcolor="rgba(0,0,0,0.12)",
-    
             zerolinecolor="rgba(0,0,0,0.25)"
         )
     )
 
-    
     fig.update_traces(line=dict(width=3.5))
-    fig.update_xaxes(
-    showgrid=True,
-    gridcolor="rgba(0,0,0,0.08)"
-    )
+    fig.update_xaxes(showgrid=True, gridcolor="rgba(0,0,0,0.08)")
     fig.update_yaxes(gridcolor="#D1D5DB")
 
     st.plotly_chart(
-    fig,
-    use_container_width=True,
-    key=f"linea_{titulo}_{uuid.uuid4()}"
+        fig,
+        use_container_width=True,
+        key=f"linea_{titulo}_{uuid.uuid4()}"
     )
 
 
-
 def grafico_lineas_multiples(df, cols, titulo, unidad=""):
-
-    cols = [c for c in cols if c is not None]
+    cols = [c for c in cols if c is not None and c in df.columns]
 
     if not cols:
         st.warning(f"No hay variables disponibles para: {titulo}")
@@ -455,9 +341,169 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
 
     fig = go.Figure()
 
-# =========================
-# ALERTAS POR SECTOR
-# =========================
+    colores = [
+        "#0B3B36",
+        "#C9A227",
+        "#556B2F",
+        "#C2410C",
+        "#475569",
+        "#2563EB",
+        "#7C3AED"
+    ]
+
+    nombres = {
+        credito_privado: "Crédito privado",
+        depositos: "Depósitos",
+        m1: "M1",
+        m2: "M2",
+        m3: "M3",
+        tc_venta: "TC Referencial",
+        tc_oficial: "TC Oficial",
+        bol_dep: "Boliv. depósitos",
+        bol_cred: "Boliv. créditos",
+        consumo_hogares: "Consumo hogares",
+        consumo_publico: "Consumo público",
+        formacion_capital: "Formación bruta de capital",
+        expo_bienes_servicios: "Exportaciones",
+        impo_bienes_servicios: "Importaciones",
+        ingresos_totales_spnf: "Ingresos totales",
+        egresos_totales_spnf: "Egresos totales",
+        resultado_corriente_spnf: "Resultado corriente",
+        resultado_global_spnf: "Resultado global",
+        ingresos_corrientes_spnf: "Ingresos corrientes",
+        ingresos_capital_spnf: "Ingresos de capital",
+        egresos_corrientes_spnf: "Egresos corrientes",
+        egresos_capital_spnf: "Egresos de capital",
+        pobreza_bolivia: "Pobreza",
+        desocupacion_nacional: "Desocupación"
+    }
+
+    for i, c in enumerate(cols):
+        s = df[["fecha", c]].dropna().sort_values("fecha")
+
+        if not s.empty:
+            fig.add_trace(
+                go.Scatter(
+                    x=s["fecha"],
+                    y=s[c],
+                    mode="lines",
+                    name=nombres.get(c, c),
+                    line=dict(
+                        width=3.5,
+                        color=colores[i % len(colores)]
+                    ),
+                    hovertemplate="%{x|%d/%m/%Y}<br>%{y:,.2f}<extra></extra>"
+                )
+            )
+
+    fig.update_layout(
+        title=titulo,
+        height=430,
+        template="plotly_white",
+        paper_bgcolor="#DCEAF7",
+        plot_bgcolor="#DCEAF7",
+        font=dict(color="#000000", size=14),
+        title_font=dict(color="#000000", size=20),
+        margin=dict(l=20, r=20, t=60, b=30),
+        xaxis_title="",
+        yaxis_title=unidad,
+        hovermode="x unified",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(color="#000000", size=13)
+        ),
+        xaxis=dict(
+            rangeselector=dict(
+                bgcolor="#FFFFFF",
+                activecolor="#0B3B36",
+                font=dict(color="#000000", size=13),
+                buttons=list([
+                    dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=5, label="5A", step="year", stepmode="backward"),
+                    dict(count=10, label="10A", step="year", stepmode="backward"),
+                    dict(step="all", label="Todo")
+                ])
+            ),
+            rangeslider=dict(
+                visible=True,
+                bgcolor="#CFE3F5",
+                bordercolor="#94A3B8"
+            ),
+            type="date",
+            tickfont=dict(color="#000000"),
+            gridcolor="rgba(0,0,0,0.08)"
+        ),
+        yaxis=dict(
+            tickfont=dict(color="#000000"),
+            gridcolor="rgba(0,0,0,0.12)",
+            zerolinecolor="rgba(0,0,0,0.25)"
+        )
+    )
+
+    fig.update_yaxes(
+        gridcolor="rgba(0,0,0,0.12)",
+        tickfont=dict(color="#000000")
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"multi_{titulo}_{uuid.uuid4()}"
+    )
+
+
+def grafico_barras(df, cols, titulo):
+    cols = [c for c in cols if c is not None and c in df.columns]
+
+    if not cols:
+        st.warning("No hay variables disponibles.")
+        return
+
+    ultimos = []
+
+    for c in cols:
+        v, f = ultimo_valor(df, c)
+
+        if v is not None:
+            ultimos.append({
+                "Variable": str(c)[:45],
+                "Valor": v
+            })
+
+    if not ultimos:
+        st.warning("Sin datos.")
+        return
+
+    data = pd.DataFrame(ultimos)
+
+    fig = px.bar(
+        data,
+        x="Variable",
+        y="Valor",
+        title=titulo,
+        template="plotly_white"
+    )
+
+    fig.update_layout(
+        height=430,
+        paper_bgcolor="#DCEAF7",
+        plot_bgcolor="#DCEAF7",
+        font=dict(color="#000000"),
+        margin=dict(l=20, r=20, t=60, b=80),
+        xaxis_title="",
+        yaxis_title="Valor"
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True,
+        key=f"barras_{titulo}_{uuid.uuid4()}"
+    )
+
 
 def alerta_sector(titulo, mensaje, nivel="info"):
     iconos = {
@@ -481,7 +527,7 @@ def alerta_sector(titulo, mensaje, nivel="info"):
         "danger": "#DC2626"
     }
 
-    texto = {
+    textos = {
         "info": "#0F172A",
         "ok": "#14532D",
         "warning": "#78350F",
@@ -500,14 +546,14 @@ def alerta_sector(titulo, mensaje, nivel="info"):
         <div style="
             font-size:18px;
             font-weight:800;
-            color:{texto.get(nivel, '#0F172A')};
+            color:{textos.get(nivel, '#0F172A')};
             margin-bottom:6px;
         ">
             {iconos.get(nivel, 'ℹ️')} {titulo}
         </div>
         <div style="
             font-size:15px;
-            color:{texto.get(nivel, '#0F172A')};
+            color:{textos.get(nivel, '#0F172A')};
             line-height:1.5;
         ">
             {mensaje}
@@ -516,249 +562,113 @@ def alerta_sector(titulo, mensaje, nivel="info"):
     """, unsafe_allow_html=True)
 
 
-
-
-    
-    # =====================
-    # COLORES CENGOB
-    # =====================
-
-    colores = [
-        "#0B3B36",  # verde petróleo
-        "#C9A227",  # dorado
-        "#556B2F",  # oliva
-        "#C2410C",  # naranja
-        "#475569"   # gris
-    ]
-
-
-   
-    # =====================
-    # NOMBRES CORTOS
-    # =====================
-
-    nombres = {
-        credito_privado: "Crédito privado",
-        depositos: "Depósitos",
-        m1: "M1",
-        m2: "M2",
-        m3: "M3",
-        tc_venta: "TC Referencial",
-        tc_oficial: "TC Oficial",
-        bol_dep: "Boliv. depósitos",
-        bol_cred: "Boliv. créditos"
+def tarjeta_riesgo(titulo, nivel):
+    colores = {
+        "Alto": "#8B1A1A",
+        "Moderado": "#8A3A0A",
+        "Bajo": "#14532D",
+        "Sin dato": "#475569"
     }
 
-    # =====================
-    # GRAFICOS
-    # =====================
+    borde = {
+        "Alto": "#EF4444",
+        "Moderado": "#F59E0B",
+        "Bajo": "#22C55E",
+        "Sin dato": "#94A3B8"
+    }
 
-    for i, c in enumerate(cols):
+    color = colores.get(nivel, "#475569")
+    line = borde.get(nivel, "#94A3B8")
 
-        s = df[["fecha", c]].dropna()
+    html = f"""
+    <div style="
+        background:{color};
+        padding:28px;
+        border-radius:20px;
+        border:2px solid {line};
+        min-height:180px;
+        box-shadow:0 8px 22px rgba(0,0,0,0.18);
+    ">
+        <div style="
+            color:white;
+            font-size:24px;
+            font-weight:800;
+            margin-bottom:45px;
+        ">
+            {titulo}
+        </div>
 
-        if not s.empty:
-
-            fig.add_trace(
-                go.Scatter(
-                    x=s["fecha"],
-                    y=s[c],
-                    mode="lines",
-                    name=nombres.get(c, c),
-                    line=dict(
-                        width=3.5,
-                        color=colores[i % len(colores)]
-                    ),
-                    hovertemplate="%{x|%d/%m/%Y}<br>%{y:,.2f}<extra></extra>"
-                )
-            )
-
-    # =====================
-    # LAYOUT
-    # =====================
-
-    fig.update_layout(
-        title=titulo,
-        height=430,
-        template="plotly_white",
-    
-        paper_bgcolor="#DCEAF7",
-        plot_bgcolor="#DCEAF7",
-    
-        font=dict(
-            color="#000000",
-            size=14
-        ),
-    
-        title_font=dict(
-            color="#000000",
-            size=20
-        ),
-    
-        margin=dict(l=20, r=20, t=60, b=30),
-        xaxis_title="",
-        yaxis_title=unidad,
-        hovermode="x unified",
-    
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            xanchor="right",
-            x=1,
-            font=dict(color="#000000", size=13)
-        ),
-    
-        xaxis=dict(
-            rangeselector=dict(
-                bgcolor="#FFFFFF",
-                activecolor="#0B3B36",
-                font=dict(color="#000000", size=13),
-                buttons=list([
-                    dict(count=1, label="1A", step="year", stepmode="backward"),
-                    dict(count=5, label="5A", step="year", stepmode="backward"),
-                    dict(count=10, label="10A", step="year", stepmode="backward"),
-                    dict(step="all", label="all")
-                ])
-            ),
-            rangeslider=dict(
-                visible=True,
-                bgcolor="#CFE3F5",
-                bordercolor="#94A3B8"
-            ),
-            type="date",
-            tickfont=dict(color="#000000"),
-            gridcolor="rgba(0,0,0,0.08)"
-        ),
-    
-        yaxis=dict(
-            tickfont=dict(color="#000000"),
-            gridcolor="rgba(0,0,0,0.12)",
-            zerolinecolor="rgba(0,0,0,0.25)"
-        )
-    )
-    
-    fig.update_yaxes(
-        gridcolor="rgba(0,0,0,0.12)",
-        tickfont=dict(color="#000000")
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True,
-        key=f"multi_{titulo}_{uuid.uuid4()}"
-    )
-
-
-def grafico_barras(df, cols, titulo):
-    cols = [c for c in cols if c is not None]
-
-    if not cols:
-        st.warning("No hay variables disponibles.")
-        return
-
-    ultimos = []
-
-    for c in cols:
-        v, f = ultimo_valor(df, c)
-        if v is not None:
-            ultimos.append({
-                "Variable": str(c)[:45],
-                "Valor": v
-            })
-
-    if not ultimos:
-        st.warning("Sin datos.")
-        return
-
-    data = pd.DataFrame(ultimos)
-
-    fig = px.bar(
-        data,
-        x="Variable",
-        y="Valor",
-        title=titulo,
-        template="plotly_white"
-    )
-
-    fig.update_layout(
-        height=430,
-        paper_bgcolor="#243447",
-        plot_bgcolor="#243447",
-        font=dict(color="#E5E7EB"),
-        margin=dict(l=20, r=20, t=60, b=80),
-        xaxis_title="",
-        yaxis_title="Valor"
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True,
-        key=f"barras_{titulo}_{uuid.uuid4()}"
-    )
-
-def semaforo(nombre, valor, bajo, medio, invertido=False):
-    if valor is None:
-        estado, color = "Sin dato", "#64748B"
-    else:
-        if not invertido:
-            if valor < bajo:
-                estado, color = "Bajo", "#22C55E"
-            elif valor < medio:
-                estado, color = "Moderado", "#F59E0B"
-            else:
-                estado, color = "Alto", "#EF4444"
-        else:
-            if valor > medio:
-                estado, color = "Adecuado", "#22C55E"
-            elif valor > bajo:
-                estado, color = "Moderado", "#F59E0B"
-            else:
-                estado, color = "Crítico", "#EF4444"
-
-    st.markdown(f"""
-    <div style="background:#111827;border:1px solid #334155;border-radius:18px;padding:18px;margin-bottom:10px">
-        <h4 style="margin:0;color:#F8FAFC">{nombre}</h4>
-        <p style="font-size:28px;margin:8px 0;color:{color};font-weight:700">{estado}</p>
+        <div style="
+            color:white;
+            font-size:44px;
+            font-weight:900;
+        ">
+            {nivel}
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    """
 
-# =================================================================================================================================================================================================================
-# VARIABLES ECONOMICAS 
-# =================================================================================================================================================================================================================
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def clasificar_normal(valor, bajo, medio):
+    if valor is None:
+        return "Sin dato"
+
+    if valor < bajo:
+        return "Bajo"
+
+    if valor < medio:
+        return "Moderado"
+
+    return "Alto"
+
+
+def clasificar_invertido(valor, bajo, medio):
+    if valor is None:
+        return "Sin dato"
+
+    if valor > medio:
+        return "Bajo"
+
+    if valor > bajo:
+        return "Moderado"
+
+    return "Alto"
+
 # =========================
-# SECTOR REAL
+# VARIABLES ECONÓMICAS
 # =========================
 
+# Sector real
 igae = buscar_columna("IGAE")
 pib_pm = buscar_columna("PIB a precios de mercado")
 consumo_publico = buscar_columna("Gasto de consumo final de la administración pública")
 consumo_hogares = buscar_columna("Gasto de consumo final de los hogares")
 formacion_capital = buscar_columna("Formación bruta de capital")
 expo_bienes_servicios = buscar_columna("Exportaciones de bienes y servicios")
-impo_bienes_servicios = buscar_columna("importaciones bienes y servicios")
+impo_bienes_servicios = buscar_columna_multiple([
+    "importaciones bienes y servicios",
+    "Importaciones de bienes y servicios",
+    "importaciones de bienes y servicios"
+])
 
-
-
-# =========================
-# SECTOR PRECIOS
-# =========================
-
+# Sector precios
 inflacion_12m = buscar_columna("Variación a doce meses")
-inflacion_mensual = buscar_columna("Variación mensual inflacion total")
+inflacion_mensual = buscar_columna_multiple([
+    "Variación mensual inflacion total",
+    "Variación mensual inflación total"
+])
 inflacion_acumulada = buscar_columna("Variación acumulada en el año")
 
-
-# =========================
-# SECTOR EXTERNO
-# =========================
-
-
+# Sector externo
 rin = buscar_columna("Reservas internacionales netas")
 tc_venta = buscar_columna("Valor referencial de venta")
 tc_oficial = buscar_columna("Tipo de cambio oficial")
+
 if tc_oficial is None:
     tc_oficial = buscar_columna("Tipo de cambio de venta")
+
 exportaciones = buscar_columna("Exportaciones")
 importaciones = buscar_columna("Importaciones")
 saldo_comercial = buscar_columna("Saldo Comercial")
@@ -770,32 +680,19 @@ recursos_alta_liquidez = buscar_columna("Recursos de Alta Liquidez")
 oro_convertible = buscar_columna("Oro convertible en divisas")
 posicion_fmi = buscar_columna("Posición con el FMI")
 
-# =========================
-# SECTOR FINANCIERO
-# =========================
-
+# Sector financiero
 credito_privado = buscar_columna("Crédito del sistema financiero al sector privado")
 depositos = buscar_columna("Depósitos en entidades")
 bol_dep = buscar_columna("Bolivianización Depósitos")
 bol_cred = buscar_columna("Bolivianización Créditos")
 
-
-# =========================
-# SECTOR MONETARIO
-# =========================
-
-
+# Sector monetario
 base_monetaria = buscar_columna("Base monetaria")
 m1 = buscar_columna("M’1")
 m2 = buscar_columna("M’2")
 m3 = buscar_columna("M’3")
 
-
-
-# =========================
-# SECTOR FISCAL
-# =========================
-
+# Sector fiscal
 ingresos_totales_spnf = buscar_columna("Ingresos Totales SPNF")
 ingresos_corrientes_spnf = buscar_columna("Ingresos Corrientes del SPNF")
 ingresos_capital_spnf = buscar_columna("Ingresos de Capital del SPNF")
@@ -807,18 +704,147 @@ egresos_capital_spnf = buscar_columna("Egresos de Capital del SPNF")
 resultado_corriente_spnf = buscar_columna("Resultado Fiscal Corriente del SPNF")
 resultado_global_spnf = buscar_columna("Resultado Fiscal Global del SPNF")
 
-# =========================
-# SECTOR SOCIAL
-# =========================
-
-pobreza_bolivia = buscar_columna("Bolivia: Indidencia de pobreza")
-gini_bolivia = buscar_columna("Bolivia: Índice de GINI")
+# Sector social
+pobreza_bolivia = buscar_columna_multiple([
+    "Bolivia: Indidencia de pobreza",
+    "Bolivia: Incidencia de pobreza",
+    "Incidencia de pobreza"
+])
+gini_bolivia = buscar_columna_multiple([
+    "Bolivia: Índice de GINI",
+    "Bolivia: Indice de GINI",
+    "Índice de GINI",
+    "Indice de GINI"
+])
 desocupacion_nacional = buscar_columna("Tasa de Desocupación Nacional")
 
-# =================================================================================================================================================================================================================
+# =========================
+# ALERTAS AUTOMÁTICAS POR SECTOR
+# =========================
+
+def alerta_precios(df):
+    infl_val, _ = ultimo_valor(df, inflacion_12m)
+
+    if infl_val is None:
+        return "Alerta de precios", "No se cuenta con dato suficiente de inflación interanual.", "info"
+
+    if infl_val >= 6:
+        return "Alerta de precios", "La inflación interanual se encuentra en zona de presión. Conviene monitorear alimentos, transporte y expectativas.", "danger"
+
+    if infl_val >= 3:
+        return "Alerta de precios", "La inflación se mantiene en rango de vigilancia. Se recomienda seguimiento preventivo.", "warning"
+
+    return "Alerta de precios", "La inflación se encuentra en un rango relativamente contenido.", "ok"
+
+
+def alerta_externo(df):
+    rin_val, _ = ultimo_valor(df, rin)
+
+    if rin_val is None:
+        return "Alerta externa", "No se cuenta con dato suficiente de reservas internacionales.", "info"
+
+    if rin_val < 2000:
+        return "Alerta externa", "Las reservas internacionales se encuentran en zona crítica. Existe riesgo de presión cambiaria y restricción externa.", "danger"
+
+    if rin_val < 5000:
+        return "Alerta externa", "Las reservas internacionales están en zona de vigilancia. Se recomienda monitorear divisas, oro y balanza comercial.", "warning"
+
+    return "Alerta externa", "La posición externa muestra un nivel relativamente adecuado de reservas.", "ok"
+
+
+def alerta_monetario(df):
+    bm_yoy = variacion_interanual(df, base_monetaria)
+
+    if bm_yoy is None:
+        return "Alerta monetaria", "No se cuenta con información suficiente para calcular la variación interanual de la base monetaria.", "info"
+
+    if bm_yoy >= 15:
+        return "Alerta monetaria", "La base monetaria muestra una expansión elevada. Puede generar presión sobre precios, liquidez y expectativas.", "warning"
+
+    if bm_yoy < 0:
+        return "Alerta monetaria", "La base monetaria presenta contracción, lo que puede reflejar menor liquidez en la economía.", "warning"
+
+    return "Alerta monetaria", "La dinámica monetaria se mantiene en un rango de seguimiento regular.", "ok"
+
+
+def alerta_financiero(df):
+    cred_yoy = variacion_interanual(df, credito_privado)
+    dep_yoy = variacion_interanual(df, depositos)
+
+    if cred_yoy is None and dep_yoy is None:
+        return "Alerta financiera", "No se cuenta con información suficiente de crédito y depósitos.", "info"
+
+    if dep_yoy is not None and dep_yoy < 0:
+        return "Alerta financiera", "Los depósitos muestran contracción interanual. Puede existir presión de liquidez en el sistema financiero.", "danger"
+
+    if cred_yoy is not None and dep_yoy is not None and cred_yoy > dep_yoy + 5:
+        return "Alerta financiera", "El crédito crece por encima de los depósitos. Conviene monitorear liquidez, fondeo y calidad de cartera.", "warning"
+
+    return "Alerta financiera", "El sistema financiero muestra una dinámica relativamente estable entre crédito y depósitos.", "ok"
+
+
+def alerta_real(df):
+    pib_yoy = variacion_interanual(df, pib_pm)
+    consumo_yoy = variacion_interanual(df, consumo_hogares)
+    inversion_yoy = variacion_interanual(df, formacion_capital)
+
+    if pib_yoy is None:
+        return "Alerta sector real", "No se cuenta con información suficiente para calcular el crecimiento interanual del PIB.", "info"
+
+    if pib_yoy < 0:
+        return "Alerta sector real", "El PIB muestra contracción interanual. Se recomienda revisar consumo, inversión y sector externo real.", "danger"
+
+    if inversion_yoy is not None and inversion_yoy < 0:
+        return "Alerta sector real", "El PIB crece, pero la formación bruta de capital muestra debilidad. Existe riesgo sobre el crecimiento futuro.", "warning"
+
+    if consumo_yoy is not None and consumo_yoy < 0:
+        return "Alerta sector real", "El consumo de hogares muestra deterioro. Puede reflejar menor dinamismo de la demanda interna.", "warning"
+
+    return "Alerta sector real", "La actividad real mantiene una trayectoria positiva según los últimos datos disponibles.", "ok"
+
+
+def alerta_fiscal(df):
+    resultado_global, _ = ultimo_valor(df, resultado_global_spnf)
+    ingresos_yoy = variacion_interanual(df, ingresos_totales_spnf)
+    egresos_yoy = variacion_interanual(df, egresos_totales_spnf)
+
+    if resultado_global is None:
+        return "Alerta fiscal", "No se cuenta con dato suficiente del resultado fiscal global del SPNF.", "info"
+
+    if resultado_global < 0 and egresos_yoy is not None and ingresos_yoy is not None and egresos_yoy > ingresos_yoy:
+        return "Alerta fiscal", "El resultado fiscal global es deficitario y los egresos crecen por encima de los ingresos. Riesgo fiscal elevado.", "danger"
+
+    if resultado_global < 0:
+        return "Alerta fiscal", "El SPNF registra déficit global. Se recomienda monitorear ingresos, gasto corriente y gasto de capital.", "warning"
+
+    return "Alerta fiscal", "El resultado fiscal global se mantiene en terreno positivo o sin señales críticas inmediatas.", "ok"
+
+
+def alerta_social(df):
+    pobreza_val, _ = ultimo_valor(df, pobreza_bolivia)
+    desocupacion_val, _ = ultimo_valor(df, desocupacion_nacional)
+    gini_val, _ = ultimo_valor(df, gini_bolivia)
+
+    if pobreza_val is None and desocupacion_val is None and gini_val is None:
+        return "Alerta social", "No se cuenta con información suficiente de pobreza, desigualdad o desocupación.", "info"
+
+    if pobreza_val is not None and pobreza_val >= 35:
+        return "Alerta social", "La incidencia de pobreza se mantiene elevada. Riesgo social alto sobre ingresos, empleo y bienestar.", "danger"
+
+    if desocupacion_val is not None and desocupacion_val >= 8:
+        return "Alerta social", "La tasa de desocupación nacional se encuentra en zona de alerta. Conviene monitorear empleo e ingresos laborales.", "warning"
+
+    if gini_val is not None and gini_val >= 0.45:
+        return "Alerta social", "El índice de GINI muestra una desigualdad relevante. Se recomienda seguimiento distributivo.", "warning"
+
+    return "Alerta social", "Los indicadores sociales no muestran una señal crítica inmediata según los últimos datos disponibles.", "ok"
+
+# =========================
 # SIDEBAR
-# =================================================================================================================================================================================================================
+# =========================
+
 st.sidebar.title("⚙️ Panel de control")
+
 fecha_min = df_original["fecha"].min()
 fecha_max = df_original["fecha"].max()
 
@@ -830,6 +856,7 @@ rango = st.sidebar.date_input(
 )
 
 df = df_original.copy()
+
 if len(rango) == 2:
     inicio = pd.to_datetime(rango[0])
     fin = pd.to_datetime(rango[1])
@@ -837,10 +864,11 @@ if len(rango) == 2:
 
 st.sidebar.markdown("---")
 st.sidebar.metric("Variables disponibles", len(df.columns) - 1)
-st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
 
-with open("logo_cengob.png", "rb") as img_file:
-    logo_base64 = base64.b64encode(img_file.read()).decode()
+if not df.empty:
+    st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
+else:
+    st.sidebar.metric("Última fecha", "Sin dato")
 
 # =========================
 # HEADER
@@ -849,29 +877,52 @@ with open("logo_cengob.png", "rb") as img_file:
 col1, col2 = st.columns([1.2, 5])
 
 with col1:
+    if os.path.exists("logo_cengob.png"):
+        with open("logo_cengob.png", "rb") as img_file:
+            logo_base64 = base64.b64encode(img_file.read()).decode()
 
-    st.html(f"""
-    <div style="
-        background:#FFFFFF;
-        border-radius:22px;
-        box-shadow:0 4px 14px rgba(0,0,0,0.08);
-        height:200px;
-        width:100%;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        padding:20px;
-        margin-top:10px;
-    ">
-        <img src="data:image/png;base64,{logo_base64}"
-             style="
-                width:170px;
-                max-width:90%;
-                height:auto;
-                object-fit:contain;
-             ">
-    </div>
-    """)
+        st.markdown(f"""
+        <div style="
+            background:#FFFFFF;
+            border-radius:22px;
+            box-shadow:0 4px 14px rgba(0,0,0,0.08);
+            height:200px;
+            width:100%;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+            margin-top:10px;
+        ">
+            <img src="data:image/png;base64,{logo_base64}"
+                 style="
+                    width:170px;
+                    max-width:90%;
+                    height:auto;
+                    object-fit:contain;
+                 ">
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div style="
+            background:#FFFFFF;
+            border-radius:22px;
+            box-shadow:0 4px 14px rgba(0,0,0,0.08);
+            height:200px;
+            width:100%;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+            margin-top:10px;
+            color:#0B3B36;
+            font-size:26px;
+            font-weight:800;
+        ">
+            CENGOB
+        </div>
+        """, unsafe_allow_html=True)
 
 with col2:
     st.markdown("""
@@ -898,46 +949,66 @@ with col2:
         margin-top:14px;
         font-size: clamp(14px, 2vw, 20px);
     ">
-        Monitor de coyuntura económica, monetaria, externa y financiera
+        Monitor de coyuntura económica, monetaria, externa, fiscal, real y social
     </p>
     """, unsafe_allow_html=True)
 
 st.markdown("---")
 
+# =========================
+# KPIs PRINCIPALES
+# =========================
 
-# =========================
-# KPIs
-# =========================
 c1, c2, c3, c4 = st.columns(4)
+
 with c1:
     kpi(df, "Actividad económica - IGAE", igae, "")
+
 with c2:
     kpi(df, "Inflación interanual", inflacion_12m, "%")
+
 with c3:
     kpi(df, "RIN", rin, "MM $us")
+
 with c4:
     kpi(df, "Tipo de cambio venta", tc_venta, "Bs/$us")
 
 c5, c6, c7, c8 = st.columns(4)
+
 with c5:
     kpi(df, "Base monetaria", base_monetaria, "MM Bs")
+
 with c6:
     kpi(df, "Crédito privado", credito_privado, "MM Bs")
+
 with c7:
     kpi(df, "Depósitos", depositos, "MM Bs")
+
 with c8:
     kpi(df, "Saldo comercial", saldo_comercial, "MM $us")
 
 st.markdown("---")
 
-st.info(
-    "Lectura ejecutiva: la inflación se mantiene en zona de alerta, "
-    "mientras las reservas internacionales continúan siendo el principal factor de riesgo externo."
+titulo_precios, mensaje_precios, nivel_precios = alerta_precios(df)
+titulo_externo, mensaje_externo, nivel_externo = alerta_externo(df)
+
+nivel_general = "ok"
+
+if nivel_precios in ["warning", "danger"] or nivel_externo in ["warning", "danger"]:
+    nivel_general = "warning"
+
+if nivel_precios == "danger" or nivel_externo == "danger":
+    nivel_general = "danger"
+
+alerta_sector(
+    "Lectura ejecutiva general",
+    f"{mensaje_precios} {mensaje_externo}",
+    nivel_general
 )
 
-# ========================================================================================================================================================================================================
+# =========================
 # TABS
-# ========================================================================================================================================================================================================
+# =========================
 
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "📈 Resumen",
@@ -950,7 +1021,6 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "👥 Social",
     "⚠️ Riesgos"
 ])
-
 
 # =========================
 # TAB 1: RESUMEN
@@ -981,7 +1051,6 @@ with tab1:
             "Millones de Bs"
         )
 
-
 # =========================
 # TAB 2: INFLACIÓN
 # =========================
@@ -1001,7 +1070,6 @@ with tab2:
 
     with i2:
         grafico_linea(df, inflacion_acumulada, "Variación acumulada en el año", "%")
-
 
 # =========================
 # TAB 3: SECTOR EXTERNO
@@ -1032,7 +1100,6 @@ with tab3:
     with d:
         grafico_linea(df, importaciones, "Importaciones", "MM $us")
 
-
 # =========================
 # TAB 4: MONETARIO
 # =========================
@@ -1053,7 +1120,6 @@ with tab4:
             "Agregados monetarios: M'1, M'2 y M'3",
             "Millones de Bs"
         )
-
 
 # =========================
 # TAB 5: FINANCIERO
@@ -1080,7 +1146,6 @@ with tab5:
             "Bolivianización de depósitos y créditos",
             "%"
         )
-
 
 # =========================
 # TAB 6: SECTOR REAL
@@ -1157,7 +1222,6 @@ with tab6:
             "Componentes del PIB por gasto",
             "Millones de Bs"
         )
-
 
 # =========================
 # TAB 7: FISCAL
@@ -1245,7 +1309,6 @@ with tab7:
             "Millones de Bs"
         )
 
-
 # =========================
 # TAB 8: SOCIAL
 # =========================
@@ -1308,70 +1371,11 @@ with tab8:
             "%"
         )
 
-
-
-
-
-
 # =========================
-# FUNCION TARJETA RIESGO
+# TAB 9: RIESGOS
 # =========================
-
-def tarjeta_riesgo(titulo, nivel):
-
-    colores = {
-        "Alto": "#8B1A1A",
-        "Moderado": "#8A3A0A",
-        "Bajo": "#14532D",
-        "Sin dato": "#475569"
-    }
-
-    borde = {
-        "Alto": "#EF4444",
-        "Moderado": "#F59E0B",
-        "Bajo": "#22C55E",
-        "Sin dato": "#94A3B8"
-    }
-
-    color = colores.get(nivel, "#475569")
-    line = borde.get(nivel, "#94A3B8")
-
-    html = f"""
-    <div style="
-        background:{color};
-        padding:28px;
-        border-radius:20px;
-        border:2px solid {line};
-        min-height:180px;
-        box-shadow:0 8px 22px rgba(0,0,0,0.18);
-    ">
-        <div style="
-            color:white;
-            font-size:24px;
-            font-weight:800;
-            margin-bottom:45px;
-        ">
-            {titulo}
-        </div>
-
-        <div style="
-            color:white;
-            font-size:44px;
-            font-weight:900;
-        ">
-            {nivel}
-        </div>
-    </div>
-    """
-
-    st.html(html)
-    
-# ========================================================================================================================================================================================================
-# RIESGOS
-# ========================================================================================================================================================================================================
 
 with tab9:
-
     st.subheader("🚦 Semáforo macroeconómico")
 
     infl_val, _ = ultimo_valor(df, inflacion_12m)
@@ -1379,116 +1383,86 @@ with tab9:
 
     tc_ref_val, _ = ultimo_valor(df, tc_venta)
     tc_of_val, _ = ultimo_valor(df, tc_oficial)
-    
+
     if tc_ref_val is not None and tc_of_val is not None and tc_of_val != 0:
         brecha_tc = abs(tc_ref_val - tc_of_val)
     else:
         brecha_tc = None
-    
+
     cred_yoy = variacion_interanual(df, credito_privado)
+    pib_yoy = variacion_interanual(df, pib_pm)
+    resultado_global, _ = ultimo_valor(df, resultado_global_spnf)
+    pobreza_val, _ = ultimo_valor(df, pobreza_bolivia)
 
-    
+    riesgo_inflacion = clasificar_normal(infl_val, 3, 6)
+    riesgo_rin = clasificar_invertido(rin_val, 2000, 5000)
+    riesgo_tc = clasificar_normal(brecha_tc, 0.20, 1.00)
+    riesgo_credito = clasificar_normal(cred_yoy, 5, 15)
 
-    # =====================
-    # FUNCIONES DE CLASIFICACION
-    # =====================
+    if pib_yoy is None:
+        riesgo_real = "Sin dato"
+    elif pib_yoy < 0:
+        riesgo_real = "Alto"
+    elif pib_yoy < 2:
+        riesgo_real = "Moderado"
+    else:
+        riesgo_real = "Bajo"
 
-    def clasificar_normal(valor, bajo, medio):
+    if resultado_global is None:
+        riesgo_fiscal = "Sin dato"
+    elif resultado_global < 0:
+        riesgo_fiscal = "Alto"
+    else:
+        riesgo_fiscal = "Bajo"
 
-        if valor is None:
-            return "Sin dato"
-
-        if valor < bajo:
-            return "Bajo"
-
-        elif valor < medio:
-            return "Moderado"
-
-        else:
-            return "Alto"
-
-    def clasificar_invertido(valor, bajo, medio):
-
-        if valor is None:
-            return "Sin dato"
-
-        if valor > medio:
-            return "Bajo"
-
-        elif valor > bajo:
-            return "Moderado"
-
-        else:
-            return "Alto"
-
-    # =====================
-    # SEMAFORO
-    # =====================
-
-    riesgo_inflacion = clasificar_normal(
-        infl_val,
-        3,
-        6
-    )
-
-    riesgo_rin = clasificar_invertido(
-        rin_val,
-        2000,
-        5000
-    )
-
-    riesgo_tc = clasificar_normal(
-        brecha_tc,
-        0.20,
-        1.00
-    )
-    
-    riesgo_credito = clasificar_normal(
-        cred_yoy,
-        5,
-        15
-    )
-
-    # =====================
-    # TARJETAS
-    # =====================
+    if pobreza_val is None:
+        riesgo_social = "Sin dato"
+    elif pobreza_val >= 35:
+        riesgo_social = "Alto"
+    elif pobreza_val >= 25:
+        riesgo_social = "Moderado"
+    else:
+        riesgo_social = "Bajo"
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        tarjeta_riesgo(
-            "Riesgo inflacionario",
-            riesgo_inflacion
-        )
+        tarjeta_riesgo("Riesgo inflacionario", riesgo_inflacion)
 
     with c2:
-        tarjeta_riesgo(
-            "Posición externa - RIN",
-            riesgo_rin
-        )
+        tarjeta_riesgo("Posición externa - RIN", riesgo_rin)
 
     with c3:
-        tarjeta_riesgo(
-            "Presión cambiaria",
-            riesgo_tc
-        )
+        tarjeta_riesgo("Presión cambiaria", riesgo_tc)
 
     with c4:
-        tarjeta_riesgo(
-            "Expansión crediticia",
-            riesgo_credito
-        )
+        tarjeta_riesgo("Expansión crediticia", riesgo_credito)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    c5, c6, c7 = st.columns(3)
+
+    with c5:
+        tarjeta_riesgo("Actividad real", riesgo_real)
+
+    with c6:
+        tarjeta_riesgo("Resultado fiscal", riesgo_fiscal)
+
+    with c7:
+        tarjeta_riesgo("Riesgo social", riesgo_social)
 
     st.info(
         "Los umbrales del semáforo son referenciales y pueden ajustarse según criterio técnico."
     )
 
 st.markdown("---")
-    
+
 # =========================
 # EXPLORADOR
 # =========================
+
 st.subheader("🔎 Explorador de variables")
+
 variables_excluir = [
     "Bolivianización (%)_1",
     "Bolivianización (%)_2",
@@ -1504,8 +1478,12 @@ variables = [
     c for c in df.columns
     if c != "fecha" and c not in variables_excluir
 ]
-seleccion = st.selectbox("Selecciona cualquier variable del Excel", variables)
-grafico_linea(df, seleccion, seleccion)
+
+if variables:
+    seleccion = st.selectbox("Selecciona cualquier variable del Excel", variables)
+    grafico_linea(df, seleccion, seleccion)
+else:
+    st.warning("No existen variables disponibles para explorar.")
 
 st.download_button(
     "⬇️ Descargar base filtrada",
