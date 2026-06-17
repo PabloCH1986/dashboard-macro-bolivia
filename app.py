@@ -563,6 +563,7 @@ def alerta_sector(titulo, mensaje, nivel="info"):
 
 
 def tarjeta_riesgo(titulo, nivel):
+
     colores = {
         "Alto": "#8B1A1A",
         "Moderado": "#8A3A0A",
@@ -588,12 +589,13 @@ def tarjeta_riesgo(titulo, nivel):
         border:2px solid {line};
         min-height:180px;
         box-shadow:0 8px 22px rgba(0,0,0,0.18);
+        margin-bottom:18px;
     ">
         <div style="
             color:white;
-            font-size:24px;
+            font-size:22px;
             font-weight:800;
-            margin-bottom:45px;
+            margin-bottom:35px;
         ">
             {titulo}
         </div>
