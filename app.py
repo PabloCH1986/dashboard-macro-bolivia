@@ -1551,35 +1551,35 @@ with tab3:
             "Bs/$us"
         )
 
-c, d = st.columns(2)
-
-with c:
-    grafico_doble_eje(
-        df=df,
-        col_izq=exportaciones_peso,
-        col_der=exportaciones_valor,
-        titulo="Exportaciones: valor y peso neto",
-        nombre_izq="Peso neto",
-        nombre_der="Valor exportado",
-        titulo_eje_izq="Peso neto en toneladas",
-        titulo_eje_der="Millones de dólares",
-        unidad_izq="toneladas",
-        unidad_der="MM $us"
-    )
-
-with d:
-    grafico_doble_eje(
-        df=df,
-        col_izq=importaciones_peso,
-        col_der=importaciones_valor,
-        titulo="Importaciones: valor CIF y peso bruto",
-        nombre_izq="Peso bruto",
-        nombre_der="Valor CIF",
-        titulo_eje_izq="Peso bruto en toneladas",
-        titulo_eje_der="Millones de dólares",
-        unidad_izq="toneladas",
-        unidad_der="MM $us"
-    )
+    c, d = st.columns(2)
+    
+    with c:
+        grafico_doble_eje(
+            df=df,
+            col_izq=exportaciones_peso,
+            col_der=exportaciones_valor,
+            titulo="Exportaciones: valor y peso neto",
+            nombre_izq="Peso neto",
+            nombre_der="Valor exportado",
+            titulo_eje_izq="Peso neto en toneladas",
+            titulo_eje_der="Millones de dólares",
+            unidad_izq="toneladas",
+            unidad_der="MM $us"
+        )
+    
+    with d:
+        grafico_doble_eje(
+            df=df,
+            col_izq=importaciones_peso,
+            col_der=importaciones_valor,
+            titulo="Importaciones: valor CIF y peso bruto",
+            nombre_izq="Peso bruto",
+            nombre_der="Valor CIF",
+            titulo_eje_izq="Peso bruto en toneladas",
+            titulo_eje_der="Millones de dólares",
+            unidad_izq="toneladas",
+            unidad_der="MM $us"
+        )
 
 # =========================
 # TAB 4: MONETARIO
