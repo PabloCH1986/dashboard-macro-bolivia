@@ -255,6 +255,7 @@ def kpi(df, titulo, col, unidad=""):
 
 
 def grafico_linea(df, col, titulo, unidad=""):
+
     if col is None:
         st.warning(f"No se encontró: {titulo}")
         return
@@ -271,60 +272,114 @@ def grafico_linea(df, col, titulo, unidad=""):
 
     fig = go.Figure()
 
+    # =====================
+    # LÍNEA PRINCIPAL CON SOMBRA
+    # =====================
     fig.add_trace(
         go.Scatter(
             x=s["fecha"],
             y=s[col],
-            mode="lines",
-            line=dict(width=3.5, color="#0B3B36"),
+            mode="lines+markers",
+            line=dict(
+                width=3.5,
+                color="#0B3B36"
+            ),
+            marker=dict(
+                size=7,
+                color="#0B3B36",
+                line=dict(
+                    width=1.5,
+                    color="#FFFFFF"
+                )
+            ),
+            fill="tozeroy",
+            fillcolor="rgba(11,59,54,0.16)",
             hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
         )
     )
 
+    # =====================
+    # DISEÑO DEL GRÁFICO
+    # =====================
     fig.update_layout(
         title=titulo,
-        height=430,
+        height=460,
         template="plotly_white",
-        paper_bgcolor="#DCEAF7",
-        plot_bgcolor="#DCEAF7",
-        font=dict(color="#000000", size=14),
-        title_font=dict(color="#000000", size=22),
-        margin=dict(l=20, r=20, t=60, b=30),
+
+        paper_bgcolor="#EEF2F5",
+        plot_bgcolor="#EEF2F5",
+
+        font=dict(
+            color="#000000",
+            size=14
+        ),
+
+        title_font=dict(
+            color="#0B3B36",
+            size=22
+        ),
+
+        margin=dict(
+            l=25,
+            r=25,
+            t=65,
+            b=25
+        ),
+
         xaxis_title="",
         yaxis_title=unidad,
+
         hovermode="x unified",
-        legend=dict(font=dict(color="#000000", size=13)),
+
         xaxis=dict(
+            type="date",
+
             rangeselector=dict(
                 bgcolor="#FFFFFF",
-                activecolor="#0B3B36",
-                font=dict(color="#000000", size=13),
+                activecolor="#C9A227",
+                bordercolor="#0B3B36",
+                borderwidth=1,
+                font=dict(
+                    color="#0B3B36",
+                    size=12
+                ),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=3, label="3A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
                     dict(count=10, label="10A", step="year", stepmode="backward"),
                     dict(step="all", label="Todo")
                 ])
             ),
+
             rangeslider=dict(
                 visible=True,
-                bgcolor="#CFE3F5",
-                bordercolor="#94A3B8"
+                bgcolor="#E6D7A2",
+                bordercolor="#0B3B36",
+                borderwidth=2,
+                thickness=0.12
             ),
-            type="date",
-            tickfont=dict(color="#000000"),
-            gridcolor="rgba(0,0,0,0.08)"
+
+            tickfont=dict(
+                color="#000000",
+                size=12
+            ),
+
+            gridcolor="rgba(0,0,0,0.10)",
+            showgrid=True
         ),
+
         yaxis=dict(
-            tickfont=dict(color="#000000"),
+            tickfont=dict(
+                color="#000000",
+                size=12
+            ),
             gridcolor="rgba(0,0,0,0.12)",
-            zerolinecolor="rgba(0,0,0,0.25)"
+            zeroline=True,
+            zerolinecolor="rgba(11,59,54,0.45)",
+            zerolinewidth=1.5
         )
     )
-
-    fig.update_traces(line=dict(width=3.5))
-    fig.update_xaxes(showgrid=True, gridcolor="rgba(0,0,0,0.08)")
-    fig.update_yaxes(gridcolor="#D1D5DB")
 
     st.plotly_chart(
         fig,
@@ -332,8 +387,8 @@ def grafico_linea(df, col, titulo, unidad=""):
         key=f"linea_{titulo}_{uuid.uuid4()}"
     )
 
-
 def grafico_lineas_multiples(df, cols, titulo, unidad=""):
+
     cols = [c for c in cols if c is not None and c in df.columns]
 
     if not cols:
@@ -343,13 +398,23 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     fig = go.Figure()
 
     colores = [
-        "#0B3B36",
-        "#C9A227",
-        "#556B2F",
-        "#C2410C",
-        "#475569",
-        "#2563EB",
-        "#7C3AED"
+        "#0B3B36",  # verde petróleo CENGOB
+        "#C9A227",  # dorado CENGOB
+        "#556B2F",  # oliva
+        "#C2410C",  # naranja institucional
+        "#475569",  # gris
+        "#2563EB",  # azul
+        "#7C3AED"   # violeta
+    ]
+
+    rellenos = [
+        "rgba(11,59,54,0.13)",
+        "rgba(201,162,39,0.13)",
+        "rgba(85,107,47,0.12)",
+        "rgba(194,65,12,0.11)",
+        "rgba(71,85,105,0.11)",
+        "rgba(37,99,235,0.10)",
+        "rgba(124,58,237,0.10)"
     ]
 
     nombres = {
@@ -380,74 +445,125 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
     }
 
     for i, c in enumerate(cols):
+
         s = df[["fecha", c]].dropna().sort_values("fecha")
 
         if not s.empty:
+
             fig.add_trace(
                 go.Scatter(
                     x=s["fecha"],
                     y=s[c],
-                    mode="lines",
+                    mode="lines+markers",
                     name=nombres.get(c, c),
                     line=dict(
-                        width=3.5,
+                        width=3.2,
                         color=colores[i % len(colores)]
                     ),
+                    marker=dict(
+                        size=6,
+                        color=colores[i % len(colores)],
+                        line=dict(
+                            width=1,
+                            color="#FFFFFF"
+                        )
+                    ),
+                    fill="tozeroy" if i == 0 else None,
+                    fillcolor=rellenos[i % len(rellenos)],
                     hovertemplate="%{x|%d/%m/%Y}<br>%{y:,.2f}<extra></extra>"
                 )
             )
 
     fig.update_layout(
         title=titulo,
-        height=430,
+        height=460,
         template="plotly_white",
-        paper_bgcolor="#DCEAF7",
-        plot_bgcolor="#DCEAF7",
-        font=dict(color="#000000", size=14),
-        title_font=dict(color="#000000", size=20),
-        margin=dict(l=20, r=20, t=60, b=30),
+
+        paper_bgcolor="#EEF2F5",
+        plot_bgcolor="#EEF2F5",
+
+        font=dict(
+            color="#000000",
+            size=14
+        ),
+
+        title_font=dict(
+            color="#0B3B36",
+            size=20
+        ),
+
+        margin=dict(
+            l=25,
+            r=25,
+            t=70,
+            b=25
+        ),
+
         xaxis_title="",
         yaxis_title=unidad,
+
         hovermode="x unified",
+
         legend=dict(
             orientation="h",
             yanchor="bottom",
             y=1.02,
             xanchor="right",
             x=1,
-            font=dict(color="#000000", size=13)
+            font=dict(
+                color="#000000",
+                size=13
+            )
         ),
+
         xaxis=dict(
+            type="date",
+
             rangeselector=dict(
                 bgcolor="#FFFFFF",
-                activecolor="#0B3B36",
-                font=dict(color="#000000", size=13),
+                activecolor="#C9A227",
+                bordercolor="#0B3B36",
+                borderwidth=1,
+                font=dict(
+                    color="#0B3B36",
+                    size=12
+                ),
                 buttons=list([
                     dict(count=1, label="1A", step="year", stepmode="backward"),
+                    dict(count=3, label="3A", step="year", stepmode="backward"),
                     dict(count=5, label="5A", step="year", stepmode="backward"),
                     dict(count=10, label="10A", step="year", stepmode="backward"),
                     dict(step="all", label="Todo")
                 ])
             ),
+
             rangeslider=dict(
                 visible=True,
-                bgcolor="#CFE3F5",
-                bordercolor="#94A3B8"
+                bgcolor="#E6D7A2",
+                bordercolor="#0B3B36",
+                borderwidth=2,
+                thickness=0.12
             ),
-            type="date",
-            tickfont=dict(color="#000000"),
-            gridcolor="rgba(0,0,0,0.08)"
-        ),
-        yaxis=dict(
-            tickfont=dict(color="#000000"),
-            gridcolor="rgba(0,0,0,0.12)",
-            zerolinecolor="rgba(0,0,0,0.25)"
-        )
-    )
 
-    fig.update_yaxes(
-        gridcolor="rgba(0,0,0,0.12)",
-        tickfont=dict(color="#000000")
+            tickfont=dict(
+                color="#000000",
+                size=12
+            ),
+
+            gridcolor="rgba(0,0,0,0.10)",
+            showgrid=True
+        ),
+
+        yaxis=dict(
+            tickfont=dict(
+                color="#000000",
+                size=12
+            ),
+            gridcolor="rgba(0,0,0,0.12)",
+            zeroline=True,
+            zerolinecolor="rgba(11,59,54,0.45)",
+            zerolinewidth=1.5
+        )
     )
 
     st.plotly_chart(
@@ -455,7 +571,6 @@ def grafico_lineas_multiples(df, cols, titulo, unidad=""):
         use_container_width=True,
         key=f"multi_{titulo}_{uuid.uuid4()}"
     )
-
 
 def grafico_barras(df, cols, titulo):
     cols = [c for c in cols if c is not None and c in df.columns]
