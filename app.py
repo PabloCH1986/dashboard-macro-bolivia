@@ -15,7 +15,7 @@ import unicodedata
 # =========================
 
 st.set_page_config(
-    page_title="Dashboard Macroeconómico CENGOB - Bolivia",
+    page_title="Sistema de Información Económica de Bolivia - CENGOB",
     layout="wide",
     page_icon="📊"
 )
@@ -1562,7 +1562,7 @@ with col2:
         font-size: clamp(28px, 5vw, 48px);
         font-weight:800;
     ">
-        Dashboard Macroeconómico Ejecutivo
+        Sistema de Información Económica de Bolivia
     </h1>
 
     <h2 style="
@@ -1579,7 +1579,7 @@ with col2:
         margin-top:14px;
         font-size: clamp(14px, 2vw, 20px);
     ">
-        Monitor de coyuntura económica, monetaria, externa, fiscal, real y social
+        Indicadores macroeconómicos, financieros, fiscales, externos y sociales para el seguimiento de la coyuntura nacional.
     </p>
     """, unsafe_allow_html=True)
 
