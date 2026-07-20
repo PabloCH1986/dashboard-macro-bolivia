@@ -8,6 +8,14 @@ import uuid
 import base64
 import os
 import unicodedata
+import io
+import json
+import requests
+
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaIoBaseDownload
 
 
 # =========================
@@ -20,8 +28,13 @@ st.set_page_config(
     page_icon="📊"
 )
 
-EXCEL_FILE = "Info.xlsx"
 SHEET_NAME = "data"
+DRIVE_CACHE_TTL = 60
+
+# El ID se guarda en .streamlit/secrets.toml o en los Secrets de Streamlit Cloud.
+# La aplicación admite dos modalidades:
+# 1) Privada y recomendada: cuenta de servicio de Google.
+# 2) Pública: archivo compartido como "Cualquier persona con el enlace".
 
 # =========================
 # TEMA AUTOMÁTICO
@@ -101,12 +114,179 @@ p,label{
 """, unsafe_allow_html=True)
 
 # =========================
-# CARGA DE DATOS
+# CARGA DE DATOS DESDE GOOGLE DRIVE
 # =========================
 
-@st.cache_data(ttl=60)
+GOOGLE_SHEETS_MIME = "application/vnd.google-apps.spreadsheet"
+XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
+
+
+def _leer_configuracion_drive():
+    """Obtiene el ID y, si existen, las credenciales privadas."""
+    try:
+        drive_cfg = dict(st.secrets["drive"])
+    except (FileNotFoundError, KeyError):
+        drive_cfg = {}
+
+    file_id = str(
+        drive_cfg.get("file_id")
+        or os.getenv("GOOGLE_DRIVE_FILE_ID", "")
+    ).strip()
+
+    if not file_id:
+        raise RuntimeError(
+            "No se configuró el ID del archivo de Google Drive. "
+            "Agrega [drive] file_id = \"...\" en los Secrets de Streamlit."
+        )
+
+    credenciales = None
+
+    # Opción A: credenciales guardadas como una sección TOML.
+    try:
+        credenciales = dict(st.secrets["gcp_service_account"])
+    except (FileNotFoundError, KeyError):
+        pass
+
+    # Opción B: JSON completo guardado dentro de [drive].
+    if not credenciales and drive_cfg.get("service_account_json"):
+        try:
+            credenciales = json.loads(drive_cfg["service_account_json"])
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "El campo drive.service_account_json no contiene un JSON válido."
+            ) from exc
+
+    return file_id, credenciales
+
+
+def _parece_archivo_excel(contenido):
+    """Reconoce archivos XLSX/XLS por su firma binaria."""
+    return (
+        contenido.startswith(b"PK")
+        or contenido.startswith(bytes.fromhex("D0CF11E0"))
+    )
+
+
+def _descargar_drive_privado(file_id, credenciales_info):
+    """Descarga un Excel privado o exporta una hoja de Google como XLSX."""
+    credenciales = service_account.Credentials.from_service_account_info(
+        credenciales_info,
+        scopes=[DRIVE_SCOPE],
+    )
+
+    servicio = build(
+        "drive",
+        "v3",
+        credentials=credenciales,
+        cache_discovery=False,
+    )
+
+    metadatos = (
+        servicio.files()
+        .get(
+            fileId=file_id,
+            fields="id,name,mimeType",
+            supportsAllDrives=True,
+        )
+        .execute()
+    )
+
+    if metadatos.get("mimeType") == GOOGLE_SHEETS_MIME:
+        solicitud = servicio.files().export_media(
+            fileId=file_id,
+            mimeType=XLSX_MIME,
+        )
+    else:
+        solicitud = servicio.files().get_media(
+            fileId=file_id,
+            supportsAllDrives=True,
+        )
+
+    buffer = io.BytesIO()
+    descargador = MediaIoBaseDownload(buffer, solicitud)
+    terminado = False
+
+    while not terminado:
+        _, terminado = descargador.next_chunk()
+
+    contenido = buffer.getvalue()
+
+    if not _parece_archivo_excel(contenido):
+        raise RuntimeError(
+            "Google Drive respondió, pero el contenido descargado no parece "
+            "ser un archivo Excel válido."
+        )
+
+    return contenido, metadatos.get("name", "archivo de Drive")
+
+
+def _descargar_drive_publico(file_id):
+    """Descarga un archivo público de Drive o exporta un Google Sheet público."""
+    urls = [
+        f"https://drive.google.com/uc?export=download&id={file_id}",
+        f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx",
+    ]
+
+    ultimo_error = None
+
+    for url in urls:
+        try:
+            respuesta = requests.get(
+                url,
+                timeout=90,
+                allow_redirects=True,
+                headers={"User-Agent": "Mozilla/5.0"},
+            )
+            respuesta.raise_for_status()
+
+            if _parece_archivo_excel(respuesta.content):
+                return respuesta.content, "archivo público de Google Drive"
+
+            ultimo_error = RuntimeError(
+                "La descarga devolvió una página HTML en lugar del Excel."
+            )
+        except requests.RequestException as exc:
+            ultimo_error = exc
+
+    raise RuntimeError(
+        "No se pudo descargar el archivo públicamente. Compártelo como "
+        "'Cualquier persona con el enlace' o configura una cuenta de servicio."
+    ) from ultimo_error
+
+
+@st.cache_data(ttl=DRIVE_CACHE_TTL, show_spinner=False)
+def descargar_excel_drive():
+    """Devuelve los bytes del Excel y el nombre de la fuente."""
+    file_id, credenciales_info = _leer_configuracion_drive()
+
+    if credenciales_info:
+        try:
+            return _descargar_drive_privado(file_id, credenciales_info)
+        except HttpError as exc:
+            raise RuntimeError(
+                "Google Drive rechazó el acceso. Verifica que el archivo esté "
+                "compartido con el correo de la cuenta de servicio."
+            ) from exc
+
+    return _descargar_drive_publico(file_id)
+
+
+@st.cache_data(ttl=DRIVE_CACHE_TTL, show_spinner="Actualizando datos desde Google Drive...")
 def cargar_datos():
-    raw = pd.read_excel(EXCEL_FILE, sheet_name=SHEET_NAME, header=None)
+    contenido_excel, nombre_fuente = descargar_excel_drive()
+
+    raw = pd.read_excel(
+        io.BytesIO(contenido_excel),
+        sheet_name=SHEET_NAME,
+        header=None,
+    )
+
+    if raw.shape[0] < 3:
+        raise ValueError(
+            "La hoja no tiene la estructura esperada: se requieren al menos "
+            "dos filas de encabezado y una fila de datos."
+        )
 
     nombres = raw.iloc[1].copy()
     nombres.iloc[0] = "fecha"
@@ -142,11 +322,11 @@ def cargar_datos():
     # Regla:
     # 1. Meses cerrados: último día del mes.
     # 2. Último mes disponible incompleto: mantiene fecha real de corte.
-    #
-    # Ejemplo:
-    # 01/04/2026 -> 30/04/2026
-    # 01/05/2026 -> 31/05/2026
-    # 03/06/2026 -> 03/06/2026 si junio es el último mes disponible incompleto.
+
+    if data.empty:
+        raise ValueError(
+            "No se encontraron fechas válidas en la primera columna de la hoja."
+        )
 
     fecha_max = data["fecha"].max()
     ultimo_mes_disponible = fecha_max.to_period("M")
@@ -158,11 +338,12 @@ def cargar_datos():
         if pd.isna(fecha):
             return fecha
 
-        # Mantener la fecha real de corte solo para el último mes incompleto
-        if not ultimo_mes_esta_cerrado and fecha.to_period("M") == ultimo_mes_disponible:
+        if (
+            not ultimo_mes_esta_cerrado
+            and fecha.to_period("M") == ultimo_mes_disponible
+        ):
             return fecha
 
-        # Convertir meses cerrados al último día del mes
         return fecha + pd.offsets.MonthEnd(0)
 
     data["fecha"] = data["fecha"].apply(ajustar_fecha_mensual)
@@ -176,6 +357,7 @@ def cargar_datos():
         if col != "fecha":
             data[col] = pd.to_numeric(data[col], errors="coerce")
 
+    data.attrs["fuente_drive"] = nombre_fuente
     return data
 
 # =========================
@@ -184,10 +366,18 @@ def cargar_datos():
 
 try:
     df_original = cargar_datos()
+    st.sidebar.caption(
+        f"☁️ Fuente: Google Drive · actualización automática cada "
+        f"{DRIVE_CACHE_TTL} segundos"
+    )
 except Exception as e:
     st.error(
-        "No se pudo cargar la base de datos. Verifica que el archivo "
-        f"'{EXCEL_FILE}' exista y que la hoja se llame '{SHEET_NAME}'."
+        "No se pudo cargar la base desde Google Drive. Verifica el ID del "
+        f"archivo, los permisos de acceso y que la hoja se llame '{SHEET_NAME}'."
+    )
+    st.info(
+        "Para acceso privado, comparte el archivo con el correo de la cuenta "
+        "de servicio. Para acceso público, habilita 'Cualquier persona con el enlace'."
     )
     st.exception(e)
     st.stop()
