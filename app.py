@@ -11,6 +11,7 @@ import unicodedata
 import io
 import json
 import requests
+import time
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -223,9 +224,11 @@ def _descargar_drive_privado(file_id, credenciales_info):
 
 def _descargar_drive_publico(file_id):
     """Descarga un archivo público de Drive o exporta un Google Sheet público."""
+    # Evita que Google/ navegador entregue una versión anterior del XLSX.
+    cache_buster = int(time.time())
     urls = [
-        f"https://drive.google.com/uc?export=download&id={file_id}",
-        f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx",
+        f"https://drive.google.com/uc?export=download&id={file_id}&_={cache_buster}",
+        f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx&_={cache_buster}",
     ]
 
     ultimo_error = None
@@ -236,7 +239,11 @@ def _descargar_drive_publico(file_id):
                 url,
                 timeout=90,
                 allow_redirects=True,
-                headers={"User-Agent": "Mozilla/5.0"},
+                headers={
+                    "User-Agent": "Mozilla/5.0",
+                    "Cache-Control": "no-cache",
+                    "Pragma": "no-cache",
+                },
             )
             respuesta.raise_for_status()
 
@@ -1699,14 +1706,57 @@ def alerta_social(df):
 
 st.sidebar.title("⚙️ Panel de control")
 
+# Streamlit no se vuelve a ejecutar solo cuando cambia el Excel de Drive.
+# Este botón fuerza una descarga nueva y elimina las dos capas de caché.
+if st.sidebar.button(
+    "🔄 Actualizar datos desde Drive",
+    use_container_width=True,
+    help="Descarga nuevamente el Excel y actualiza los indicadores."
+):
+    descargar_excel_drive.clear()
+    cargar_datos.clear()
+    st.rerun()
+
 fecha_min = df_original["fecha"].min()
 fecha_max = df_original["fecha"].max()
+fecha_min_date = fecha_min.date()
+fecha_max_date = fecha_max.date()
+
+# Mantiene el rango hasta la última fecha disponible cuando la fuente incorpora
+# un dato nuevo. Sin este control, la sesión puede quedarse cerrada en 24/07/2026
+# aunque el Excel ya contenga una fila del 05/08/2026.
+max_previa = st.session_state.get("_fecha_max_fuente_previa")
+rango_guardado = st.session_state.get("rango_fechas")
+
+if rango_guardado is None:
+    st.session_state["rango_fechas"] = (fecha_min_date, fecha_max_date)
+elif isinstance(rango_guardado, (tuple, list)) and len(rango_guardado) == 2:
+    inicio_guardado, fin_guardado = rango_guardado
+
+    # Si el usuario estaba viendo hasta el último dato anterior, ampliar
+    # automáticamente el rango hasta el nuevo máximo de la fuente.
+    if max_previa is not None and fin_guardado == max_previa and fecha_max_date > max_previa:
+        st.session_state["rango_fechas"] = (inicio_guardado, fecha_max_date)
+
+    # Evita rangos fuera de los límites actuales de la base.
+    inicio_ajustado = max(inicio_guardado, fecha_min_date)
+    fin_ajustado = min(
+        st.session_state["rango_fechas"][1],
+        fecha_max_date
+    )
+    st.session_state["rango_fechas"] = (inicio_ajustado, fin_ajustado)
+
+st.session_state["_fecha_max_fuente_previa"] = fecha_max_date
 
 rango = st.sidebar.date_input(
     "Rango de fechas",
-    value=(fecha_min, fecha_max),
-    min_value=fecha_min,
-    max_value=fecha_max
+    min_value=fecha_min_date,
+    max_value=fecha_max_date,
+    key="rango_fechas"
+)
+
+st.sidebar.caption(
+    f"Última fecha detectada en el Excel: {fecha_max.strftime('%d/%m/%Y')}"
 )
 
 df = df_original.copy()
@@ -1726,9 +1776,20 @@ st.sidebar.markdown("---")
 st.sidebar.metric("Variables disponibles", len(df.columns) - 1)
 
 if not df.empty:
-    st.sidebar.metric("Última fecha", df["fecha"].max().strftime("%d/%m/%Y"))
+    st.sidebar.metric("Última fecha visible", df["fecha"].max().strftime("%d/%m/%Y"))
 else:
-    st.sidebar.metric("Última fecha", "Sin dato")
+    st.sidebar.metric("Última fecha visible", "Sin dato")
+
+# Control de verificación específico para el tipo de cambio oficial.
+tc_fuente_valor, tc_fuente_fecha = ultimo_valor(df_original, tc_oficial)
+if tc_fuente_valor is not None and tc_fuente_fecha is not None:
+    st.sidebar.success(
+        "TC oficial leído del Excel: "
+        f"{formato_numero(tc_fuente_valor)} Bs/$us · "
+        f"{tc_fuente_fecha.strftime('%d/%m/%Y')}"
+    )
+else:
+    st.sidebar.warning("No se detectó un dato de tipo de cambio oficial en la fuente.")
 
 # =========================
 # HEADER
