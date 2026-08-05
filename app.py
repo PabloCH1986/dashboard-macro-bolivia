@@ -390,6 +390,11 @@ def normalizar_texto(texto):
     texto = str(texto).lower().strip()
     texto = unicodedata.normalize("NFKD", texto)
     texto = "".join(c for c in texto if not unicodedata.combining(c))
+
+    # Unifica espacios, tabulaciones y saltos de línea de los encabezados de Excel.
+    # Esto permite reconocer títulos visualmente partidos en varias líneas.
+    texto = " ".join(texto.split())
+
     return texto
 
 
@@ -1416,11 +1421,46 @@ inflacion_acumulada = buscar_columna("Variación acumulada en el año")
 
 # Sector externo
 rin = buscar_columna("Reservas internacionales netas")
-tc_venta = buscar_columna("Valor referencial de venta")
-tc_oficial = buscar_columna("Tipo de cambio oficial")
 
-if tc_oficial is None:
-    tc_oficial = buscar_columna("Tipo de cambio de venta")
+tc_venta = buscar_columna_multiple([
+    "Valor referencial de venta del dólar estadounidense",
+    "Valor referencial de venta",
+    "Tipo de cambio referencial"
+])
+
+# El tipo de cambio oficial cambió de fuente dentro de la base:
+# - Hasta mayo de 2026: tipo de cambio de venta en el Bolsín.
+# - Desde junio de 2026: columna específica de Tipo de Cambio Oficial.
+# Se construye una sola serie consolidada, priorizando el dato nuevo.
+tc_oficial_nuevo = buscar_columna_multiple([
+    "Tipo de Cambio Oficial (Bs/USD)",
+    "Tipo de cambio oficial Bs/USD",
+    "Tipo de cambio oficial"
+])
+
+tc_oficial_historico = buscar_columna_multiple([
+    "Tipo de cambio de venta en el Bolsín",
+    "Tipo de cambio de venta en el Bolsin"
+])
+
+tc_oficial = None
+
+if tc_oficial_nuevo is not None or tc_oficial_historico is not None:
+    tc_oficial = "Tipo de cambio oficial consolidado"
+
+    if tc_oficial_nuevo is not None:
+        serie_oficial_nueva = df_original[tc_oficial_nuevo]
+    else:
+        serie_oficial_nueva = pd.Series(index=df_original.index, dtype="float64")
+
+    if tc_oficial_historico is not None:
+        serie_oficial_historica = df_original[tc_oficial_historico]
+    else:
+        serie_oficial_historica = pd.Series(index=df_original.index, dtype="float64")
+
+    df_original[tc_oficial] = serie_oficial_nueva.combine_first(
+        serie_oficial_historica
+    )
 
 exportaciones_valor = buscar_columna_multiple([
     "Exportaciones (En millones de dólares)",
@@ -1833,7 +1873,13 @@ with tab1:
         kpi(df, "RIN", rin, "MM $us")
 
     with c4:
-        kpi(df, "Tipo de cambio venta", tc_venta, "Bs/$us")
+        kpi(
+            df,
+            "Tipo de cambio oficial",
+            tc_oficial,
+            "Bs/$us",
+            delta_tipo="ninguno"
+        )
 
     # =========================
     # FILA 2: MONETARIO Y FINANCIERO
@@ -1916,32 +1962,73 @@ with tab3:
     titulo, mensaje, nivel = alerta_externo(df)
     alerta_sector(titulo, mensaje, nivel)
 
-    c1, c2, c3, c4 = st.columns(4)
+    # Primera fila: posición externa y mercado cambiario
+    c1, c2, c3 = st.columns(3)
 
     with c1:
         kpi(df, "RIN", rin, "MM $us")
 
     with c2:
-        kpi(df, "Tipo de cambio referencial", tc_venta, "Bs/$us")
+        kpi(
+            df,
+            "Tipo de cambio referencial",
+            tc_venta,
+            "Bs/$us",
+            delta_tipo="ninguno"
+        )
 
     with c3:
-        kpi(df, "Exportaciones", exportaciones_valor, "MM $us", tipo="acumulado", delta_tipo="acumulado")
+        kpi(
+            df,
+            "Tipo de cambio oficial",
+            tc_oficial,
+            "Bs/$us",
+            delta_tipo="ninguno"
+        )
+
+    # Segunda fila: comercio exterior
+    c4, c5, c6 = st.columns(3)
 
     with c4:
-        kpi(df, "Importaciones", importaciones_valor, "MM $us", tipo="acumulado", delta_tipo="acumulado")
-
-    c5, c6, c7, c8 = st.columns(4)
+        kpi(
+            df,
+            "Exportaciones",
+            exportaciones_valor,
+            "MM $us",
+            tipo="acumulado",
+            delta_tipo="acumulado"
+        )
 
     with c5:
-        kpi(df, "Saldo comercial", saldo_comercial, "MM $us", tipo="acumulado", delta_tipo="acumulado")
+        kpi(
+            df,
+            "Importaciones",
+            importaciones_valor,
+            "MM $us",
+            tipo="acumulado",
+            delta_tipo="acumulado"
+        )
 
     with c6:
-        kpi(df, "Divisas", divisas, "MM $us")
+        kpi(
+            df,
+            "Saldo comercial",
+            saldo_comercial,
+            "MM $us",
+            tipo="acumulado",
+            delta_tipo="acumulado"
+        )
+
+    # Tercera fila: composición de las reservas
+    c7, c8, c9 = st.columns(3)
 
     with c7:
-        kpi(df, "Oro", oro, "MM $us")
+        kpi(df, "Divisas", divisas, "MM $us")
 
     with c8:
+        kpi(df, "Oro", oro, "MM $us")
+
+    with c9:
         kpi(df, "Recursos alta liquidez", recursos_alta_liquidez, "MM $us")
 
     st.markdown("---")
@@ -1955,7 +2042,7 @@ with tab3:
         grafico_lineas_multiples(
             df,
             [tc_venta, tc_oficial],
-            "Tipo de cambio referencial vs oficial",
+            "Tipo de cambio referencial y oficial",
             "Bs/$us"
         )
 
