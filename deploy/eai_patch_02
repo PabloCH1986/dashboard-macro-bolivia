@@ -1,0 +1,195 @@
+         font=dict(
+             color="#000000",
+@@ -708,7 +707,7 @@
+         ),
+ 
+         title_font=dict(
+-            color="#0B3B36",
++            color="#5C2335",
+             size=22
+         ),
+ 
+@@ -729,11 +728,11 @@
+ 
+             rangeselector=dict(
+                 bgcolor="#FFFFFF",
+-                activecolor="#C9A227",
+-                bordercolor="#0B3B36",
++                activecolor="#A77543",
++                bordercolor="#5C2335",
+                 borderwidth=1,
+                 font=dict(
+-                    color="#0B3B36",
++                    color="#5C2335",
+                     size=12
+                 ),
+                 buttons=list([
+@@ -747,8 +746,8 @@
+ 
+             rangeslider=dict(
+                 visible=True,
+-                bgcolor="#E6D7A2",
+-                bordercolor="#0B3B36",
++                bgcolor="#E9DDCA",
++                bordercolor="#5C2335",
+                 borderwidth=2,
+                 thickness=0.12
+             ),
+@@ -769,7 +768,7 @@
+             ),
+             gridcolor="rgba(0,0,0,0.12)",
+             zeroline=True,
+-            zerolinecolor="rgba(11,59,54,0.45)",
++            zerolinecolor="rgba(92,35,53,0.42)",
+             zerolinewidth=1.5
+         )
+     )
+@@ -791,8 +790,8 @@
+     fig = go.Figure()
+ 
+     colores = [
+-        "#0B3B36",  # verde petróleo CENGOB
+-        "#C9A227",  # dorado CENGOB
++        "#5C2335",  # burgundy EAI
++        "#A77543",  # copper EAI
+         "#556B2F",  # oliva
+         "#C2410C",  # naranja institucional
+         "#475569",  # gris
+@@ -801,8 +800,8 @@
+     ]
+ 
+     rellenos = [
+-        "rgba(11,59,54,0.13)",
+-        "rgba(201,162,39,0.13)",
++        "rgba(92,35,53,0.12)",
++        "rgba(167,117,67,0.12)",
+         "rgba(85,107,47,0.12)",
+         "rgba(194,65,12,0.11)",
+         "rgba(71,85,105,0.11)",
+@@ -875,8 +874,8 @@
+         height=460,
+         template="plotly_white",
+ 
+-        paper_bgcolor="#EEF2F5",
+-        plot_bgcolor="#EEF2F5",
++        paper_bgcolor="#FAF9F6",
++        plot_bgcolor="#FAF9F6",
+ 
+         font=dict(
+             color="#000000",
+@@ -884,7 +883,7 @@
+         ),
+ 
+         title_font=dict(
+-            color="#0B3B36",
++            color="#5C2335",
+             size=20
+         ),
+ 
+@@ -917,11 +916,11 @@
+ 
+             rangeselector=dict(
+                 bgcolor="#FFFFFF",
+-                activecolor="#C9A227",
+-                bordercolor="#0B3B36",
++                activecolor="#A77543",
++                bordercolor="#5C2335",
+                 borderwidth=1,
+                 font=dict(
+-                    color="#0B3B36",
++                    color="#5C2335",
+                     size=12
+                 ),
+                 buttons=list([
+@@ -935,8 +934,8 @@
+ 
+             rangeslider=dict(
+                 visible=True,
+-                bgcolor="#E6D7A2",
+-                bordercolor="#0B3B36",
++                bgcolor="#E9DDCA",
++                bordercolor="#5C2335",
+                 borderwidth=2,
+                 thickness=0.12
+             ),
+@@ -957,7 +956,7 @@
+             ),
+             gridcolor="rgba(0,0,0,0.12)",
+             zeroline=True,
+-            zerolinecolor="rgba(11,59,54,0.45)",
++            zerolinecolor="rgba(92,35,53,0.42)",
+             zerolinewidth=1.5
+         )
+     )
+@@ -979,8 +978,8 @@
+     titulo_eje_der="Eje derecho",
+     unidad_izq="",
+     unidad_der="",
+-    color_izq="#0B3B36",
+-    color_der="#C9A227",
++    color_izq="#5C2335",
++    color_der="#A77543",
+     sombra_izq=True,
+     sombra_der=False
+ ):
+@@ -1031,7 +1030,7 @@
+                         )
+                     ),
+                     fill="tozeroy" if sombra_izq else None,
+-                    fillcolor="rgba(11,59,54,0.13)" if sombra_izq else None,
++                    fillcolor="rgba(92,35,53,0.12)" if sombra_izq else None,
+                     hovertemplate=(
+                         "%{x|%d/%m/%Y}<br>"
+                         + nombre_izq
+@@ -1071,7 +1070,7 @@
+                         )
+                     ),
+                     fill="tozeroy" if sombra_der else None,
+-                    fillcolor="rgba(201,162,39,0.13)" if sombra_der else None,
++                    fillcolor="rgba(167,117,67,0.12)" if sombra_der else None,
+                     hovertemplate=(
+                         "%{x|%d/%m/%Y}<br>"
+                         + nombre_der
+@@ -1091,8 +1090,8 @@
+         height=480,
+         template="plotly_white",
+ 
+-        paper_bgcolor="#EEF2F5",
+-        plot_bgcolor="#EEF2F5",
++        paper_bgcolor="#FAF9F6",
++        plot_bgcolor="#FAF9F6",
+ 
+         font=dict(
+             color="#000000",
+@@ -1100,7 +1099,7 @@
+         ),
+ 
+         title_font=dict(
+-            color="#0B3B36",
++            color="#5C2335",
+             size=22
+         ),
+ 
+@@ -1130,11 +1129,11 @@
+ 
+             rangeselector=dict(
+                 bgcolor="#FFFFFF",
+-                activecolor="#C9A227",
+-                bordercolor="#0B3B36",
++                activecolor="#A77543",
++                bordercolor="#5C2335",
+                 borderwidth=1,
+                 font=dict(
+-                    color="#0B3B36",
++                    color="#5C2335",
+                     size=12
+                 ),
+                 buttons=list([
+@@ -1148,8 +1147,8 @@
+ 
+             rangeslider=dict(
+                 visible=True,
+-                bgcolor="#E6D7A2",
+-                bordercolor="#0B3B36",
++                bgcolor="#E9DDCA",
++                bordercolor="#5C2335",
