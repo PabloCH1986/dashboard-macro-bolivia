@@ -1,0 +1,154 @@
+-    """Obtiene el ID y, si existen, las credenciales privadas."""
++    """Obtiene el ID de Drive y define el método de autenticación.
++
++    En Cloud Run se recomienda EAI_DRIVE_AUTH=adc para usar la identidad del
++    servicio (Application Default Credentials) sin llaves JSON persistentes.
++    La compatibilidad con st.secrets se mantiene para ejecuciones locales o
++    despliegues heredados en Streamlit Cloud.
++    """
+     try:
+         drive_cfg = dict(st.secrets["drive"])
+     except (FileNotFoundError, KeyError):
+@@ -138,18 +101,17 @@
+     if not file_id:
+         raise RuntimeError(
+             "No se configuró el ID del archivo de Google Drive. "
+-            "Agrega [drive] file_id = \"...\" en los Secrets de Streamlit."
++            "Define GOOGLE_DRIVE_FILE_ID en Cloud Run o [drive] file_id en st.secrets."
+         )
+ 
+     credenciales = None
+ 
+-    # Opción A: credenciales guardadas como una sección TOML.
++    # Compatibilidad: credenciales explícitas desde Streamlit Secrets.
+     try:
+         credenciales = dict(st.secrets["gcp_service_account"])
+     except (FileNotFoundError, KeyError):
+         pass
+ 
+-    # Opción B: JSON completo guardado dentro de [drive].
+     if not credenciales and drive_cfg.get("service_account_json"):
+         try:
+             credenciales = json.loads(drive_cfg["service_account_json"])
+@@ -158,7 +120,17 @@
+                 "El campo drive.service_account_json no contiene un JSON válido."
+             ) from exc
+ 
+-    return file_id, credenciales
++    auth_mode = str(
++        drive_cfg.get("auth_mode")
++        or os.getenv("EAI_DRIVE_AUTH", "auto")
++    ).strip().lower()
++
++    if auth_mode not in {"auto", "adc", "public"}:
++        raise RuntimeError(
++            "EAI_DRIVE_AUTH debe ser 'auto', 'adc' o 'public'."
++        )
++
++    return file_id, credenciales, auth_mode
+ 
+ 
+ def _parece_archivo_excel(contenido):
+@@ -169,12 +141,20 @@
+     )
+ 
+ 
+-def _descargar_drive_privado(file_id, credenciales_info):
+-    """Descarga un Excel privado o exporta una hoja de Google como XLSX."""
+-    credenciales = service_account.Credentials.from_service_account_info(
+-        credenciales_info,
+-        scopes=[DRIVE_SCOPE],
+-    )
++def _descargar_drive_privado(file_id, credenciales_info=None):
++    """Descarga un Excel privado o exporta una hoja de Google como XLSX.
++
++    Si no se entrega un JSON explícito, usa Application Default Credentials.
++    En Cloud Run esas credenciales corresponden a la cuenta de servicio
++    configurada como identidad del servicio.
++    """
++    if credenciales_info:
++        credenciales = service_account.Credentials.from_service_account_info(
++            credenciales_info,
++            scopes=[DRIVE_SCOPE],
++        )
++    else:
++        credenciales, _ = google.auth.default(scopes=[DRIVE_SCOPE])
+ 
+     servicio = build(
+         "drive",
+@@ -265,8 +245,9 @@
+ @st.cache_data(ttl=DRIVE_CACHE_TTL, show_spinner=False)
+ def descargar_excel_drive():
+     """Devuelve los bytes del Excel y el nombre de la fuente."""
+-    file_id, credenciales_info = _leer_configuracion_drive()
++    file_id, credenciales_info, auth_mode = _leer_configuracion_drive()
+ 
++    # 1) Credenciales explícitas de Streamlit Secrets (compatibilidad heredada).
+     if credenciales_info:
+         try:
+             return _descargar_drive_privado(file_id, credenciales_info)
+@@ -276,6 +257,24 @@
+                 "compartido con el correo de la cuenta de servicio."
+             ) from exc
+ 
++    # 2) Cloud Run / Google Cloud: Application Default Credentials (recomendado).
++    if auth_mode in {"adc", "auto"}:
++        try:
++            return _descargar_drive_privado(file_id)
++        except DefaultCredentialsError as exc:
++            if auth_mode == "adc":
++                raise RuntimeError(
++                    "No se encontraron Application Default Credentials. "
++                    "En Cloud Run asigna una cuenta de servicio al servicio."
++                ) from exc
++        except HttpError as exc:
++            if auth_mode == "adc":
++                raise RuntimeError(
++                    "Google Drive rechazó a la identidad de Cloud Run. Comparte el "
++                    "archivo con el correo de la cuenta de servicio del monitor."
++                ) from exc
++
++    # 3) Archivo público (o fallback local en modo auto).
+     return _descargar_drive_publico(file_id)
+ 
+ 
+@@ -544,7 +543,7 @@
+     st.markdown(
+         f"""
+         <p style="
+-            color:#0B3B36;
++            color:#5C2335;
+             font-size:15px;
+             margin-top:6px;
+             font-weight:500;
+@@ -675,18 +674,18 @@
+             mode="lines",
+             line=dict(
+                 width=3.5,
+-                color="#0B3B36"
++                color="#5C2335"
+             ),
+             marker=dict(
+                 size=7,
+-                color="#0B3B36",
++                color="#5C2335",
+                 line=dict(
+                     width=1.5,
+                     color="#FFFFFF"
+                 )
+             ),
+             fill="tozeroy",
+-            fillcolor="rgba(11,59,54,0.16)",
++            fillcolor="rgba(92,35,53,0.14)",
+             hovertemplate="%{x|%d/%m/%Y}<br>Valor: %{y:,.2f}<extra></extra>"
+         )
+     )
+@@ -699,8 +698,8 @@
+         height=460,
+         template="plotly_white",
+ 
+-        paper_bgcolor="#EEF2F5",
+-        plot_bgcolor="#EEF2F5",
++        paper_bgcolor="#FAF9F6",
++        plot_bgcolor="#FAF9F6",
+ 
