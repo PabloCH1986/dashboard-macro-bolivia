@@ -1,0 +1,138 @@
+--- original_lf.py	2026-08-25 15:10:33.845169894 +0000
++++ EAI_Cloud_Run_Deploy/app.py	2026-08-25 15:09:10.163132306 +0000
+@@ -13,6 +13,8 @@
+ import requests
+ import time
+ 
++import google.auth
++from google.auth.exceptions import DefaultCredentialsError
+ from google.oauth2 import service_account
+ from googleapiclient.discovery import build
+ from googleapiclient.errors import HttpError
+@@ -24,18 +26,19 @@
+ # =========================
+ 
+ st.set_page_config(
+-    page_title="Sistema de Información Económica de Bolivia - CENGOB",
++    page_title="Bolivia Economic Monitor | Economic Analytics Institute",
+     layout="wide",
+-    page_icon="📊"
++    page_icon="📈"
+ )
+ 
+ SHEET_NAME = "data"
+ DRIVE_CACHE_TTL = 60
+ 
+-# El ID se guarda en .streamlit/secrets.toml o en los Secrets de Streamlit Cloud.
+-# La aplicación admite dos modalidades:
+-# 1) Privada y recomendada: cuenta de servicio de Google.
+-# 2) Pública: archivo compartido como "Cualquier persona con el enlace".
++# El ID puede venir de GOOGLE_DRIVE_FILE_ID (Cloud Run) o de st.secrets.
++# Modalidades de acceso:
++# 1) Cloud Run recomendada: Application Default Credentials (sin llave JSON).
++# 2) Compatibilidad: cuenta de servicio en st.secrets.
++# 3) Pública: archivo compartido como "Cualquier persona con el enlace".
+ 
+ # =========================
+ # TEMA AUTOMÁTICO
+@@ -43,74 +46,28 @@
+ 
+ st.markdown("""
+ <style>
+-
+-.stApp{
+-    background-color:#EEF2F5;
+-}
+-
+-/* HEADER */
+-[data-testid="stHeader"]{
+-    background:#0B3B36;
+-}
+-
+-/* SIDEBAR */
+-[data-testid="stSidebar"]{
+-    background:#F8FAFC;
+-}
+-
+-/* TITULOS */
+-h1,h2,h3,h4,h5,h6{
+-    color:#0B3B36 !important;
+-    font-weight:800 !important;
+-}
+-
+-/* TEXTO */
+-p,label{
+-    color:#1E293B;
+-}
+-
+-/* TABS */
+-.stTabs [data-baseweb="tab"]{
+-    background:#E7E5E4;
+-    color:#1E293B !important;
+-    border-radius:12px;
+-    padding:10px 18px;
+-    font-weight:700;
+-}
+-
+-.stTabs [aria-selected="true"] *{
+-    color:white !important;
+-}
+-
+-.stTabs [data-baseweb="tab"] *{
+-    color:#0F172A !important;
+-}
+-
+-/* METRICAS */
+-[data-testid="stMetric"]{
+-    background:#F8FAFC;
+-    border-left:5px solid #C9A227;
+-    border-radius:18px;
+-    padding:18px;
+-    box-shadow:0 4px 12px rgba(0,0,0,0.05);
+-    border-top:1px solid #E5E7EB;
+-    border-right:1px solid #E5E7EB;
+-    border-bottom:1px solid #E5E7EB;
+-    transition:0.3s;
+-}
+-
+-/* GRAFICOS */
+-.js-plotly-plot{
+-    border-radius:18px;
+-    overflow:hidden;
+-}
+-
+-/* ALERTAS */
+-.stAlert{
+-    border-left:5px solid #C8A951;
+-    border-radius:14px;
+-}
+-
++:root{--eai-burgundy:#5C2335;--eai-burgundy-deep:#3F1725;--eai-copper:#A77543;--eai-copper-soft:#C9A878;--eai-charcoal:#20272D;--eai-ink:#182027;--eai-slate:#5F6B74;--eai-ivory:#F5F1E8;--eai-paper:#FAF9F6;--eai-sage:#63766F;--eai-line:#DDD4C7;}
++.stApp{background:linear-gradient(180deg,var(--eai-paper) 0%,#F7F3EC 100%);color:var(--eai-ink);}
++[data-testid="stHeader"]{background:rgba(63,23,37,0.98);}
++[data-testid="stSidebar"]{background:var(--eai-ivory);border-right:1px solid var(--eai-line);}
++[data-testid="stSidebar"] h1,[data-testid="stSidebar"] h2,[data-testid="stSidebar"] h3{color:var(--eai-burgundy-deep)!important;}
++h1,h2,h3,h4,h5,h6{color:var(--eai-burgundy-deep)!important;font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;letter-spacing:-.015em;}
++p,label,div,span{color:var(--eai-ink);}
++.stTabs [data-baseweb="tab-list"]{gap:8px;}
++.stTabs [data-baseweb="tab"]{background:#EEE8DE;border:1px solid #DDD4C7;border-radius:10px 10px 0 0;padding:10px 16px;font-weight:700;}
++.stTabs [aria-selected="true"]{background:var(--eai-burgundy)!important;border-color:var(--eai-burgundy)!important;}
++.stTabs [aria-selected="true"] *{color:#FFF!important;}.stTabs [data-baseweb="tab"] *{color:var(--eai-charcoal)!important;}
++[data-testid="stMetric"]{background:#FFF;border:1px solid var(--eai-line);border-top:4px solid var(--eai-copper);border-radius:14px;padding:16px;box-shadow:0 6px 20px rgba(32,39,45,.06);transition:transform .2s ease,box-shadow .2s ease;}
++[data-testid="stMetric"]:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(32,39,45,.09);}
++[data-testid="stMetricLabel"]{font-weight:700;}
++.stButton>button,.stDownloadButton>button{border-radius:10px;border:1px solid var(--eai-burgundy);background:var(--eai-burgundy);color:#FFF;font-weight:700;}
++.stButton>button:hover,.stDownloadButton>button:hover{border-color:var(--eai-burgundy-deep);background:var(--eai-burgundy-deep);color:#FFF;}
++[data-baseweb="select"]>div,[data-testid="stDateInput"] input{border-color:var(--eai-line)!important;background:#FFF!important;}
++.js-plotly-plot{border-radius:14px;overflow:hidden;border:1px solid var(--eai-line);box-shadow:0 4px 16px rgba(32,39,45,.04);}
++.stAlert{border-left:5px solid var(--eai-copper);border-radius:10px;}hr{border:none;border-top:1px solid var(--eai-line);margin:1.4rem 0;}
++.eai-kicker{color:var(--eai-copper);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;}
++.eai-terminal-strip{background:var(--eai-charcoal);border:1px solid #313A41;border-radius:10px;padding:10px 14px;margin:2px 0 16px;color:#FFF;font-size:12px;letter-spacing:.03em;}.eai-terminal-strip strong{color:var(--eai-copper-soft);}
++.eai-footer{margin-top:28px;padding:22px 0 8px;border-top:1px solid var(--eai-line);color:var(--eai-slate);font-size:13px;}
+ </style>
+ """, unsafe_allow_html=True)
+ 
+@@ -124,7 +81,13 @@
+ 
+ 
+ def _leer_configuracion_drive():
