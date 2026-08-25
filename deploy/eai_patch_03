@@ -1,0 +1,169 @@
++                bordercolor="#5C2335",
+                 borderwidth=2,
+                 thickness=0.12
+             ),
+@@ -1178,7 +1177,7 @@
+         ),
+         gridcolor="rgba(0,0,0,0.12)",
+         zeroline=True,
+-        zerolinecolor="rgba(11,59,54,0.45)"
++        zerolinecolor="rgba(92,35,53,0.42)"
+     )
+ 
+     # =====================
+@@ -1237,8 +1236,8 @@
+ 
+     fig.update_layout(
+         height=430,
+-        paper_bgcolor="#DCEAF7",
+-        plot_bgcolor="#DCEAF7",
++        paper_bgcolor="#F1ECE4",
++        plot_bgcolor="#F1ECE4",
+         font=dict(color="#000000"),
+         margin=dict(l=20, r=20, t=60, b=80),
+         xaxis_title="",
+@@ -1278,7 +1277,7 @@
+     }
+ 
+     colores = {
+-        "info": "#DCEAF7",
++        "info": "#F1ECE4",
+         "ok": "#DCFCE7",
+         "warning": "#FEF3C7",
+         "danger": "#FEE2E2"
+@@ -1300,7 +1299,7 @@
+ 
+     st.markdown(f"""
+     <div style="
+-        background:{colores.get(nivel, '#DCEAF7')};
++        background:{colores.get(nivel, '#F1ECE4')};
+         border-left:7px solid {bordes.get(nivel, '#2563EB')};
+         border-radius:16px;
+         padding:16px 20px;
+@@ -1704,14 +1703,15 @@
+ # SIDEBAR
+ # =========================
+ 
+-st.sidebar.title("⚙️ Panel de control")
++st.sidebar.markdown("### EAI Research Terminal")
++st.sidebar.caption("Bolivia Economic Monitor · Research · Data · Policy")
+ 
+ # Streamlit no se vuelve a ejecutar solo cuando cambia el Excel de Drive.
+ # Este botón fuerza una descarga nueva y elimina las dos capas de caché.
+ if st.sidebar.button(
+-    "🔄 Actualizar datos desde Drive",
++    "↻ Actualizar datos",
+     use_container_width=True,
+-    help="Descarga nuevamente el Excel y actualiza los indicadores."
++    help="Vuelve a consultar la fuente de datos y actualiza los indicadores del monitor."
+ ):
+     descargar_excel_drive.clear()
+     cargar_datos.clear()
+@@ -1784,7 +1784,7 @@
+ tc_fuente_valor, tc_fuente_fecha = ultimo_valor(df_original, tc_oficial)
+ if tc_fuente_valor is not None and tc_fuente_fecha is not None:
+     st.sidebar.success(
+-        "TC oficial leído del Excel: "
++        "TC oficial · fuente de datos: "
+         f"{formato_numero(tc_fuente_valor)} Bs/$us · "
+         f"{tc_fuente_fecha.strftime('%d/%m/%Y')}"
+     )
+@@ -1792,97 +1792,101 @@
+     st.sidebar.warning("No se detectó un dato de tipo de cambio oficial en la fuente.")
+ 
+ # =========================
+-# HEADER
++# HEADER EAI
+ # =========================
+ 
+-col1, col2 = st.columns([1.2, 5])
++col1, col2 = st.columns([1.1, 5])
+ 
+ with col1:
+-    if os.path.exists("logo_cengob.png"):
+-        with open("logo_cengob.png", "rb") as img_file:
++    if os.path.exists("logo_eai.png"):
++        with open("logo_eai.png", "rb") as img_file:
+             logo_base64 = base64.b64encode(img_file.read()).decode()
+ 
+         st.markdown(f"""
+         <div style="
+-            background:#FFFFFF;
+-            border-radius:22px;
+-            box-shadow:0 4px 14px rgba(0,0,0,0.08);
+-            height:200px;
++            background:#5C2335;
++            border-radius:16px;
++            box-shadow:0 8px 26px rgba(63,23,37,0.18);
++            height:178px;
+             width:100%;
+             display:flex;
+             justify-content:center;
+             align-items:center;
+             padding:20px;
+-            margin-top:10px;
++            margin-top:8px;
+         ">
+             <img src="data:image/png;base64,{logo_base64}"
+-                 style="
+-                    width:170px;
+-                    max-width:90%;
+-                    height:auto;
+-                    object-fit:contain;
+-                 ">
++                 style="width:170px;max-width:90%;height:auto;object-fit:contain;">
+         </div>
+         """, unsafe_allow_html=True)
+     else:
+         st.markdown("""
+         <div style="
+-            background:#FFFFFF;
+-            border-radius:22px;
+-            box-shadow:0 4px 14px rgba(0,0,0,0.08);
+-            height:200px;
++            background:#5C2335;
++            border-radius:16px;
++            box-shadow:0 8px 26px rgba(63,23,37,0.18);
++            height:178px;
+             width:100%;
+             display:flex;
++            flex-direction:column;
+             justify-content:center;
+             align-items:center;
+             padding:20px;
+-            margin-top:10px;
+-            color:#0B3B36;
+-            font-size:26px;
+-            font-weight:800;
++            margin-top:8px;
+         ">
+-            CENGOB
++            <div style="color:#FFFFFF;font-family:Georgia,serif;font-size:48px;font-weight:700;line-height:1;">EAI</div>
++            <div style="color:#C9A878;font-size:11px;letter-spacing:.16em;margin-top:10px;text-transform:uppercase;">Research · Data · Policy</div>
+         </div>
+         """, unsafe_allow_html=True)
+ 
+ with col2:
+     st.markdown("""
++    <div class="eai-kicker">Economic Analytics Institute · Bolivia Research Terminal</div>
+     <h1 style="
+-        color:#0B3B36;
+-        margin-bottom:0;
+-        font-size: clamp(28px, 5vw, 48px);
+-        font-weight:800;
+-    ">
+-        Sistema de Información Económica de Bolivia
+-    </h1>
++        color:#3F1725;
++        margin:6px 0 0 0;
++        font-size:clamp(30px,5vw,50px);
++        font-weight:700;
++    ">Bolivia Economic Monitor</h1>
+ 
+     <h2 style="
+-        color:#0B3B36;
+-        margin-top:10px;
+-        font-size: clamp(18px, 3vw, 28px);
+-        font-weight:600;
+-    ">
+-        Centro de Gobierno - CENGOB
