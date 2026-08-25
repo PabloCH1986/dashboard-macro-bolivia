@@ -1,0 +1,125 @@
+-    </h2>
++        color:#20272D !important;
++        margin:8px 0 0 0;
++        font-size:clamp(18px,3vw,27px);
++        font-family:Inter,system-ui,sans-serif !important;
++        font-weight:650 !important;
++    ">Macroeconomic Intelligence Dashboard</h2>
+ 
+     <p style="
+-        color:#0B3B36;
+-        margin-top:14px;
+-        font-size: clamp(14px, 2vw, 20px);
++        color:#5F6B74;
++        margin-top:13px;
++        font-size:clamp(14px,2vw,18px);
++        line-height:1.55;
++        max-width:960px;
+     ">
+-        Indicadores macroeconómicos, financieros, fiscales, externos y sociales para el seguimiento de la coyuntura nacional.
++        Seguimiento de actividad, precios, sector externo, política monetaria, sistema financiero,
++        finanzas públicas e indicadores sociales de Bolivia, con una lectura integrada para investigación y análisis de coyuntura.
+     </p>
+     """, unsafe_allow_html=True)
+ 
+-st.markdown("---")
++fecha_terminal = df_original["fecha"].max() if not df_original.empty else None
++fecha_terminal_txt = fecha_terminal.strftime("%d/%m/%Y") if fecha_terminal is not None else "Sin dato"
+ 
++st.markdown(
++    f'''<div class="eai-terminal-strip">
++    <strong>EAI MONITOR</strong> &nbsp;|&nbsp; Bolivia &nbsp;|&nbsp; Último dato disponible: <strong>{fecha_terminal_txt}</strong>
++    &nbsp;|&nbsp; Fuente de datos: Google Drive / fuentes económicas consolidadas
++    &nbsp;|&nbsp; Research · Data · Policy
++    </div>''',
++    unsafe_allow_html=True
++)
+ 
+ # =========================
+ # TABS
+ # =========================
+ 
+ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+-    "📈 Resumen",
++    "📊 Economic Pulse",
+     "🔥 Inflación",
+     "🌎 Sector externo",
+     "💵 Monetario",
+@@ -1890,7 +1894,7 @@
+     "🏭 Sector real",
+     "🏛️ Fiscal",
+     "👥 Social",
+-    "⚠️ Riesgos"
++    "🚦 Risk Watch"
+ ])
+ 
+ # =========================
+@@ -1898,7 +1902,8 @@
+ # =========================
+ 
+ with tab1:
+-    st.subheader("📈 Resumen ejecutivo de indicadores clave")
++    st.subheader("📊 EAI Economic Pulse")
++    st.caption("Lectura sintética de los principales indicadores de coyuntura económica de Bolivia.")
+ 
+     titulo_precios, mensaje_precios, nivel_precios = alerta_precios(df)
+     titulo_externo, mensaje_externo, nivel_externo = alerta_externo(df)
+@@ -1912,7 +1917,7 @@
+         nivel_general = "danger"
+     
+     alerta_sector(
+-        "Lectura ejecutiva general",
++        "EAI Macro View",
+         f"{mensaje_precios} {mensaje_externo}",
+         nivel_general
+ )
+@@ -2545,7 +2550,8 @@
+ # =========================
+ 
+ with tab9:
+-    st.subheader("🚦 Semáforo macroeconómico")
++    st.subheader("🚦 EAI Risk Watch")
++    st.caption("Semáforo técnico de señales macroeconómicas para seguimiento y discusión analítica.")
+ 
+     infl_val, _ = ultimo_valor(df, inflacion_12m)
+     rin_val, _ = ultimo_valor(df, rin)
+@@ -2630,7 +2636,8 @@
+ # EXPLORADOR
+ # =========================
+ 
+-st.subheader("🔎 Explorador de variables")
++st.subheader("🔎 EAI Data Explorer")
++st.caption("Explora las series consolidadas y descarga el corte filtrado para análisis reproducible.")
+ 
+ variables_excluir = [
+     "Bolivianización (%)_1",
+@@ -2649,15 +2656,26 @@
+ ]
+ 
+ if variables:
+-    seleccion = st.selectbox("Selecciona cualquier variable del Excel", variables)
++    seleccion = st.selectbox("Selecciona una variable", variables)
+     grafico_linea(df, seleccion, seleccion)
+ else:
+     st.warning("No existen variables disponibles para explorar.")
+ 
+ st.download_button(
+-    "⬇️ Descargar base filtrada",
++    "⬇️ Descargar datos del monitor",
+     data=df.to_csv(index=False).encode("utf-8"),
+-    file_name="base_macro_filtrada.csv",
++    file_name="eai_bolivia_economic_monitor_data.csv",
+     mime="text/csv"
+ )
+ 
++
++
++# =========================
++# FOOTER EAI
++# =========================
++st.markdown("""
++<div class="eai-footer">
++<strong style="color:#5C2335;">Economic Analytics Institute (EAI)</strong> · Research · Data · Policy<br>
++Bolivia Economic Monitor es una herramienta de análisis e investigación. Los umbrales, alertas y lecturas son referenciales y deben interpretarse junto con las fuentes primarias y la metodología correspondiente.
++</div>
++""", unsafe_allow_html=True)
