@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -30,7 +31,17 @@ st.set_page_config(
 )
 
 SHEET_NAME = "data"
-DRIVE_CACHE_TTL = 60
+DRIVE_REFRESH_SECONDS = 60
+DRIVE_CACHE_TTL = 55
+
+# Fuerza una nueva ejecución de la app cada minuto. El contador cambia únicamente
+# en cada ciclo automático y se usa también como clave de caché para garantizar
+# que los datos se vuelvan a descargar desde Google Drive.
+auto_refresh_count = st_autorefresh(
+    interval=DRIVE_REFRESH_SECONDS * 1000,
+    limit=None,
+    key="drive_auto_refresh",
+)
 
 # El ID se guarda en .streamlit/secrets.toml o en los Secrets de Streamlit Cloud.
 # La aplicación admite dos modalidades:
@@ -263,7 +274,7 @@ def _descargar_drive_publico(file_id):
 
 
 @st.cache_data(ttl=DRIVE_CACHE_TTL, show_spinner=False)
-def descargar_excel_drive():
+def descargar_excel_drive(refresh_key=0):
     """Devuelve los bytes del Excel y el nombre de la fuente."""
     file_id, credenciales_info = _leer_configuracion_drive()
 
@@ -280,8 +291,8 @@ def descargar_excel_drive():
 
 
 @st.cache_data(ttl=DRIVE_CACHE_TTL, show_spinner="Actualizando datos desde Google Drive...")
-def cargar_datos():
-    contenido_excel, nombre_fuente = descargar_excel_drive()
+def cargar_datos(refresh_key=0):
+    contenido_excel, nombre_fuente = descargar_excel_drive(refresh_key)
 
     raw = pd.read_excel(
         io.BytesIO(contenido_excel),
@@ -372,10 +383,10 @@ def cargar_datos():
 # =========================
 
 try:
-    df_original = cargar_datos()
+    df_original = cargar_datos(auto_refresh_count)
     st.sidebar.caption(
-        f"☁️ Fuente: Google Drive · actualización automática cada "
-        f"{DRIVE_CACHE_TTL} segundos"
+        f"☁️ Fuente: Google Drive · sincronización automática cada "
+        f"{DRIVE_REFRESH_SECONDS} segundos"
     )
 except Exception as e:
     st.error(
