@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit.components.v1 as components
-from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
@@ -34,14 +33,8 @@ SHEET_NAME = "data"
 DRIVE_REFRESH_SECONDS = 60
 DRIVE_CACHE_TTL = 55
 
-# Fuerza una nueva ejecución de la app cada minuto. El contador cambia únicamente
-# en cada ciclo automático y se usa también como clave de caché para garantizar
-# que los datos se vuelvan a descargar desde Google Drive.
-auto_refresh_count = st_autorefresh(
-    interval=DRIVE_REFRESH_SECONDS * 1000,
-    limit=None,
-    key="drive_auto_refresh",
-)
+# La actualización automática usa únicamente funciones nativas de Streamlit.
+# No requiere instalar paquetes externos como streamlit-autorefresh.
 
 # El ID se guarda en .streamlit/secrets.toml o en los Secrets de Streamlit Cloud.
 # La aplicación admite dos modalidades:
@@ -378,12 +371,45 @@ def cargar_datos(refresh_key=0):
     data.attrs["fuente_drive"] = nombre_fuente
     return data
 
+
+# =========================
+# SINCRONIZACIÓN AUTOMÁTICA
+# =========================
+# st.fragment puede ejecutarse cada cierto intervalo sin interacción del usuario.
+# En el ciclo automático limpiamos las cachés y pedimos un rerun completo de la app.
+# El sello temporal evita un bucle de reruns cuando comienza la ejecución completa.
+_fragment = getattr(st, "fragment", None) or getattr(st, "experimental_fragment", None)
+
+if "_drive_refresh_generation" not in st.session_state:
+    st.session_state["_drive_refresh_generation"] = 0
+
+if _fragment is not None:
+    @_fragment(run_every=DRIVE_REFRESH_SECONDS)
+    def _sincronizar_drive_automaticamente():
+        ahora = time.time()
+        ultima = st.session_state.get("_drive_refresh_ts")
+
+        # Primera ejecución del fragmento: solo inicia el reloj.
+        if ultima is None:
+            st.session_state["_drive_refresh_ts"] = ahora
+            return
+
+        # Las ejecuciones automáticas llegan aproximadamente cada 60 segundos.
+        if ahora - ultima >= DRIVE_REFRESH_SECONDS - 2:
+            st.session_state["_drive_refresh_ts"] = ahora
+            st.session_state["_drive_refresh_generation"] += 1
+            descargar_excel_drive.clear()
+            cargar_datos.clear()
+            st.rerun()
+
+    _sincronizar_drive_automaticamente()
+
 # =========================
 # CARGAR BASE ORIGINAL
 # =========================
 
 try:
-    df_original = cargar_datos(auto_refresh_count)
+    df_original = cargar_datos(st.session_state["_drive_refresh_generation"])
     st.sidebar.caption(
         f"☁️ Fuente: Google Drive · sincronización automática cada "
         f"{DRIVE_REFRESH_SECONDS} segundos"
